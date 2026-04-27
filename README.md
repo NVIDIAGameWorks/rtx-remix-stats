@@ -8,12 +8,21 @@ The workflow in `.github/workflows/repository-stats.yml` collects stats for:
 - `NVIDIAGameWorks/dxvk-remix`
 - `NVIDIAGameWorks/toolkit-remix`
 
-Reports are committed to the `github-repo-stats` branch under:
+Reports stay private in this repository. Each workflow run commits the generated
+HTML reports to the `github-repo-stats` branch under:
 
 ```text
 NVIDIAGameWorks/rtx-remix/latest-report/report.html
 NVIDIAGameWorks/dxvk-remix/latest-report/report.html
 NVIDIAGameWorks/toolkit-remix/latest-report/report.html
+```
+
+The workflow also uploads each latest report as an Actions artifact named:
+
+```text
+stats-rtx-remix
+stats-dxvk-remix
+stats-toolkit-remix
 ```
 
 ## Required Secrets
@@ -44,12 +53,15 @@ Required fine-grained token permissions:
 - `Contents: Read and write` on `NVIDIAGameWorks/rtx-remix-stats`
 - `Metadata: Read-only`, which GitHub grants automatically
 
-## Optional Private Pages
+## Viewing Reports
 
-If private GitHub Pages is available for the org, publish from:
+This setup does not use GitHub Pages.
 
-- branch: `github-repo-stats`
-- folder: `/`
+To view a report:
 
-After GitHub shows the private Pages URL, add a repository variable named
-`GH_STATS_PAGES_URL` with that URL.
+- Open the latest `repository-stats` workflow run.
+- Download the matching `stats-*` artifact.
+- Open `report.html` locally.
+
+The historical snapshots and latest reports are also available on the private
+`github-repo-stats` branch for anyone with repository read access.

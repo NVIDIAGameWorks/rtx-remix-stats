@@ -28,7 +28,7 @@ jobs:
             repository: NVIDIAGameWorks/toolkit-remix
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_STATS_WRITE_TOKEN }}
@@ -42,12 +42,12 @@ jobs:
           repository: ${{ matrix.repository }}
           data-repository: NVIDIAGameWorks/rtx-remix-stats
           databranch: github-repo-stats
-          ghpagesprefix: ${{ vars.GH_STATS_PAGES_URL }}
+          ghpagesprefix: none
           release-asset-patterns: "*"
           output-directory: preview-output
 
       - name: Upload preview artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: stats-${{ matrix.id }}
           path: ${{ steps.stats.outputs.local-output-directory }}/${{ matrix.repository }}/latest-report/
