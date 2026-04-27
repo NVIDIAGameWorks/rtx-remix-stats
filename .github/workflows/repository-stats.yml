@@ -1,0 +1,54 @@
+name: repository-stats
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-stats
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - id: rtx-remix
+            repository: NVIDIAGameWorks/rtx-remix
+          - id: dxvk-remix
+            repository: NVIDIAGameWorks/dxvk-remix
+          - id: toolkit-remix
+            repository: NVIDIAGameWorks/toolkit-remix
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_STATS_WRITE_TOKEN }}
+
+      - name: Collect stats for ${{ matrix.repository }}
+        id: stats
+        uses: ./.github/actions/github-stats
+        with:
+          ghtoken: ${{ secrets.GH_STATS_READ_TOKEN }}
+          write-token: ${{ secrets.GH_STATS_WRITE_TOKEN }}
+          repository: ${{ matrix.repository }}
+          data-repository: NVIDIAGameWorks/rtx-remix-stats
+          databranch: github-repo-stats
+          ghpagesprefix: ${{ vars.GH_STATS_PAGES_URL }}
+          release-asset-patterns: "*"
+          output-directory: preview-output
+
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stats-${{ matrix.id }}
+          path: ${{ steps.stats.outputs.local-output-directory }}/${{ matrix.repository }}/latest-report/
+          if-no-files-found: error
