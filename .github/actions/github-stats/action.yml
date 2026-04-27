@@ -25,7 +25,7 @@ inputs:
     required: false
     default: github-repo-stats
   ghpagesprefix:
-    description: Optional GitHub Pages URL prefix for the data branch. Example: https://owner.github.io/repo
+    description: "Optional GitHub Pages URL prefix for the data branch. Example: https://owner.github.io/repo"
     required: false
     default: ""
   api-base-url:
@@ -57,7 +57,7 @@ inputs:
     required: false
     default: "true"
   release-asset-patterns:
-    description: Comma-separated fnmatch patterns for uploaded release assets to track. Example: "*.zip,*.tar.gz"
+    description: 'Comma-separated fnmatch patterns for uploaded release assets to track. Example: "*.zip,*.tar.gz"'
     required: false
     default: "*"
   max-pages:
