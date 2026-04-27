@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Repository Statistics</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1110;
+      --panel: #111c17;
+      --panel-soft: #14231d;
+      --ink: #edf7f1;
+      --muted: #9caea5;
+      --line: #263831;
+      --line-strong: #3b5449;
+      --blue: #7db7ff;
+      --green: #81e2b2;
+      --cyan: #67e8f9;
+      --amber: #f4c76d;
+      --rose: #fb7185;
+      --chart-axis: #52685d;
+      --chart-grid: #22342d;
+      --chart-label: #a5b6ae;
+      --shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #101d18 0, #0d1714 260px, var(--bg) 100%);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.38;
+    }
+    a {
+      color: #9bc9ff;
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.16em;
+    }
+    .topbar, .section-nav, .report-shell, footer {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+    .topbar {
+      align-items: center;
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      padding-top: 20px;
+      padding-bottom: 12px;
+    }
+    .brand {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .brand a:hover {
+      color: var(--green);
+    }
+    .brand-mark {
+      align-items: center;
+      background: #0f1915;
+      border: 1px solid #315144;
+      border-radius: 8px;
+      color: #f1fff7;
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      font-weight: 800;
+      height: 34px;
+      justify-content: center;
+      letter-spacing: 0;
+      width: 34px;
+    }
+    .eyebrow {
+      color: var(--green);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin: 0 0 4px;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { letter-spacing: 0; line-height: 1.12; }
+    h1 {
+      font-size: 1.45rem;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    h2 { font-size: 1.22rem; margin: 0; }
+    h3 { font-size: 0.98rem; margin: 0 0 10px; }
+    .run-meta {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .run-meta span {
+      background: rgba(17, 28, 23, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+    }
+    .section-nav {
+      backdrop-filter: blur(12px);
+      background: rgba(11, 17, 16, 0.84);
+      border-bottom: 1px solid rgba(59, 84, 73, 0.62);
+      border-top: 1px solid rgba(38, 56, 49, 0.82);
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      padding-top: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .section-nav a {
+      background: #121d18;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #dcebe4;
+      flex: 0 0 auto;
+      font-size: 0.83rem;
+      font-weight: 650;
+      padding: 6px 10px;
+      text-decoration: none;
+    }
+    .section-nav a:hover {
+      border-color: var(--line-strong);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.26);
+    }
+    .report-shell {
+      display: grid;
+      gap: 16px;
+      padding-bottom: 24px;
+      padding-top: 16px;
+    }
+    .intro-panel {
+      align-items: center;
+      background:
+        linear-gradient(135deg, rgba(15, 25, 21, 0.99), rgba(18, 58, 52, 0.96));
+      border: 1px solid rgba(129, 226, 178, 0.14);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      color: #f9fbf8;
+      display: grid;
+      gap: 18px;
+      grid-template-columns: minmax(0, 0.72fr) minmax(420px, 1fr);
+      padding: 18px;
+    }
+    .intro-panel .eyebrow { color: #8de1b5; }
+    .intro-panel h2 {
+      font-size: 1.8rem;
+      margin: 0 0 7px;
+      overflow-wrap: anywhere;
+    }
+    .description {
+      color: #d7e2dc;
+      font-size: 0.95rem;
+      margin: 0;
+      max-width: 760px;
+    }
+    .meta, .note {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin: 7px 0 0;
+    }
+    .intro-panel .meta { color: #c8d6d0; }
+    .intro-panel a { color: #b7d9ff; }
+    .overview {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .overview-item {
+      background: rgba(255, 255, 255, 0.075);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 8px;
+      min-width: 0;
+      padding: 12px;
+    }
+    .overview-item span,
+    .metric span {
+      color: inherit;
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      opacity: 0.74;
+      text-transform: uppercase;
+    }
+    .overview-item strong,
+    .metric strong {
+      display: block;
+      font-size: 1.55rem;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+    .overview-item small,
+    .metric small {
+      display: block;
+      font-size: 0.78rem;
+      margin-top: 7px;
+      opacity: 0.72;
+    }
+    .overview-item.blue { border-top: 3px solid #7fb4ff; }
+    .overview-item.green { border-top: 3px solid #8de1b5; }
+    .overview-item.cyan { border-top: 3px solid #67e8f9; }
+    .overview-item.amber { border-top: 3px solid #f6c76b; }
+    .report-section {
+      background: rgba(17, 28, 23, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+      padding: 16px;
+    }
+    .section-heading {
+      align-items: end;
+      display: grid;
+      gap: 4px;
+      grid-template-columns: minmax(0, 1fr);
+      margin-bottom: 12px;
+    }
+    .metrics {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      margin: 0 0 12px;
+    }
+    .metric {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      padding: 10px 12px;
+    }
+    .metric span { color: var(--muted); opacity: 1; }
+    .metric strong { color: var(--ink); font-size: 1.38rem; }
+    .metric small { color: var(--muted); opacity: 1; }
+    .content-grid {
+      align-items: start;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: minmax(0, 1.42fr) minmax(320px, 0.82fr);
+    }
+    .chart-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 12px;
+    }
+    .chart {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 10px;
+    }
+    .chart svg {
+      display: block;
+      height: auto;
+      min-width: 560px;
+      width: 100%;
+    }
+    .legend {
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.78rem;
+      margin-top: 8px;
+    }
+    .legend i {
+      border-radius: 999px;
+      display: inline-block;
+      height: 8px;
+      margin-right: 5px;
+      width: 8px;
+    }
+    .table-panel {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 10px;
+    }
+    .wide-table { margin-top: 12px; }
+    table {
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      min-width: 420px;
+      width: 100%;
+    }
+    caption {
+      color: #d9e8e0;
+      font-size: 0.82rem;
+      font-weight: 750;
+      margin: 0 0 7px;
+      text-align: left;
+    }
+    th, td {
+      border-bottom: 1px solid #1e2c26;
+      padding: 7px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; }
+    .split {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .bar-cell {
+      min-width: 90px;
+      width: 24%;
+    }
+    .bar {
+      background: linear-gradient(90deg, #6eb6ff, #8de1b5);
+      border-radius: 999px;
+      display: block;
+      height: 7px;
+    }
+    footer {
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding-bottom: 32px;
+      padding-top: 4px;
+    }
+    @media (max-width: 980px) {
+      .intro-panel,
+      .content-grid,
+      .chart-grid,
+      .split {
+        grid-template-columns: 1fr;
+      }
+      .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .topbar, .section-nav, .report-shell, footer {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .run-meta { justify-content: flex-start; }
+      .intro-panel, .report-section { padding: 12px; }
+      .overview { grid-template-columns: 1fr; }
+      h1 { font-size: 1.22rem; }
+      .intro-panel h2 { font-size: 1.42rem; }
+      .chart svg { min-width: 520px; }
+    }
+    .index-shell {
+      padding-top: 16px;
+    }
+    .repo-list {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .repo-card {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+      padding: 14px;
+    }
+    .repo-card h3 {
+      font-size: 1.05rem;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    .repo-card h3 a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .repo-card h3 a:hover {
+      color: var(--green);
+    }
+    .repo-card .meta {
+      margin: 0;
+    }
+    .repo-metrics {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .repo-metrics div {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px;
+    }
+    .repo-metrics span {
+      color: var(--muted);
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .repo-metrics strong {
+      display: block;
+      font-size: 1.12rem;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">GS</span>
+      <div>
+        <p class="eyebrow">Service intelligence</p>
+        <h1>Repository stats</h1>
+      </div>
+    </div>
+    <div class="run-meta">
+      <span>2026-04-27T19:04:45Z UTC</span>
+      <span>3 report(s)</span>
+    </div>
+  </header>
+  <main class="report-shell index-shell">
+    <section class="intro-panel" aria-label="Report summary">
+      <div>
+        <p class="eyebrow">Latest reports</p>
+        <h2>NVIDIAGameWorks/rtx-remix-stats</h2>
+        <p class="description">Generated repository traffic, community, counter, and release asset download reports.</p>
+      </div>
+      <div class="overview"><div class="overview-item blue"><span>Reports</span><strong>3</strong><small>repositories tracked</small></div><div class="overview-item green"><span>Views</span><strong>7,159</strong><small>daily total sum</small></div><div class="overview-item cyan"><span>Stars</span><strong>2,058</strong><small>latest counters</small></div><div class="overview-item amber"><span>Release downloads</span><strong>0</strong><small>tracked assets</small></div></div>
+    </section>
+    <section class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Repositories</p>
+        <h2>Available reports</h2>
+      </div>
+      <div class="repo-list"><article class="repo-card"><h3><a href="NVIDIAGameWorks/dxvk-remix/latest-report/report.html">NVIDIAGameWorks/dxvk-remix</a></h3><p class="meta">Updated 2026-04-27T18:56:07Z</p><div class="repo-metrics"><div><span>Views</span><strong>1,607</strong></div><div><span>Clones</span><strong>725</strong></div><div><span>Stars</span><strong>404</strong></div><div><span>Downloads</span><strong>0</strong></div></div></article><article class="repo-card"><h3><a href="NVIDIAGameWorks/rtx-remix/latest-report/report.html">NVIDIAGameWorks/rtx-remix</a></h3><p class="meta">Updated 2026-04-27T19:04:45Z</p><div class="repo-metrics"><div><span>Views</span><strong>5,076</strong></div><div><span>Clones</span><strong>104</strong></div><div><span>Stars</span><strong>1,599</strong></div><div><span>Downloads</span><strong>0</strong></div></div></article><article class="repo-card"><h3><a href="NVIDIAGameWorks/toolkit-remix/latest-report/report.html">NVIDIAGameWorks/toolkit-remix</a></h3><p class="meta">Updated 2026-04-27T18:56:22Z</p><div class="repo-metrics"><div><span>Views</span><strong>476</strong></div><div><span>Clones</span><strong>527</strong></div><div><span>Stars</span><strong>55</strong></div><div><span>Downloads</span><strong>0</strong></div></div></article></div>
+    </section>
+  </main>
+  <footer>
+    Generated by github-stats-action-nv.
+  </footer>
+</body>
+</html>
