@@ -1,0 +1,130 @@
+name: GitHub repository stats
+description: Collect repository traffic snapshots and publish an HTML stats report.
+branding:
+  icon: bar-chart-2
+  color: black
+
+inputs:
+  ghtoken:
+    description: GitHub token used to read repository stats and push the data branch.
+    required: true
+  repository:
+    description: Repository to collect stats for, in owner/repo form.
+    required: false
+    default: ${{ github.repository }}
+  data-repository:
+    description: Repository that stores snapshots and reports, in owner/repo form.
+    required: false
+    default: ${{ github.repository }}
+  databranch:
+    description: Branch in the data repository where snapshots and reports are committed.
+    required: false
+    default: github-repo-stats
+  ghpagesprefix:
+    description: Optional GitHub Pages URL prefix for the data branch. Example: https://owner.github.io/repo
+    required: false
+    default: ""
+  api-base-url:
+    description: GitHub REST API base URL.
+    required: false
+    default: ${{ github.api_url }}
+  github-server-url:
+    description: GitHub web base URL.
+    required: false
+    default: ${{ github.server_url }}
+  api-version:
+    description: Value for the X-GitHub-Api-Version request header.
+    required: false
+    default: "2022-11-28"
+  include-traffic:
+    description: Fetch views, clones, popular referrers, and popular paths.
+    required: false
+    default: "true"
+  include-stargazers:
+    description: Fetch stargazer creation timestamps.
+    required: false
+    default: "true"
+  include-forks:
+    description: Fetch fork creation timestamps.
+    required: false
+    default: "true"
+  include-releases:
+    description: Fetch release metadata and uploaded release asset download counts.
+    required: false
+    default: "true"
+  release-asset-patterns:
+    description: Comma-separated fnmatch patterns for uploaded release assets to track. Example: "*.zip,*.tar.gz"
+    required: false
+    default: "*"
+  max-pages:
+    description: Maximum number of paginated API pages to fetch for stargazers, forks, releases, and release assets.
+    required: false
+    default: "1000"
+  output-directory:
+    description: Optional workspace directory where generated data is copied for dry-run inspection or artifact upload.
+    required: false
+    default: ""
+  push:
+    description: Commit and push changes to the data branch.
+    required: false
+    default: "true"
+  commit-user-name:
+    description: Git author name for data branch commits.
+    required: false
+    default: github-actions[bot]
+  commit-user-email:
+    description: Git author email for data branch commits.
+    required: false
+    default: 41898282+github-actions[bot]@users.noreply.github.com
+
+outputs:
+  report-path:
+    description: Path to the generated HTML report in the data branch.
+    value: ${{ steps.run.outputs.report-path }}
+  report-url:
+    description: Report URL when ghpagesprefix is configured.
+    value: ${{ steps.run.outputs.report-url }}
+  snapshot-path:
+    description: Path to the generated JSON snapshot in the data branch.
+    value: ${{ steps.run.outputs.snapshot-path }}
+  committed:
+    description: Whether the action created a git commit.
+    value: ${{ steps.run.outputs.committed }}
+  local-output-directory:
+    description: Workspace-relative directory copied from the generated data branch output.
+    value: ${{ steps.run.outputs.local-output-directory }}
+  local-report-path:
+    description: Workspace-relative path to the copied report when output-directory is set.
+    value: ${{ steps.run.outputs.local-report-path }}
+  local-summary-path:
+    description: Workspace-relative path to the copied summary JSON when output-directory is set.
+    value: ${{ steps.run.outputs.local-summary-path }}
+  local-snapshot-path:
+    description: Workspace-relative path to the copied snapshot JSON when output-directory is set.
+    value: ${{ steps.run.outputs.local-snapshot-path }}
+
+runs:
+  using: composite
+  steps:
+    - id: run
+      shell: bash
+      run: python3 "${{ github.action_path }}/src/github_stats_action.py"
+      env:
+        GHRS_TOKEN: ${{ inputs.ghtoken }}
+        GHRS_REPOSITORY: ${{ inputs.repository }}
+        GHRS_DATA_REPOSITORY: ${{ inputs.data-repository }}
+        GHRS_DATA_BRANCH: ${{ inputs.databranch }}
+        GHRS_GHPAGES_PREFIX: ${{ inputs.ghpagesprefix }}
+        GHRS_API_BASE_URL: ${{ inputs.api-base-url }}
+        GHRS_GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
+        GHRS_API_VERSION: ${{ inputs.api-version }}
+        GHRS_INCLUDE_TRAFFIC: ${{ inputs.include-traffic }}
+        GHRS_INCLUDE_STARGAZERS: ${{ inputs.include-stargazers }}
+        GHRS_INCLUDE_FORKS: ${{ inputs.include-forks }}
+        GHRS_INCLUDE_RELEASES: ${{ inputs.include-releases }}
+        GHRS_RELEASE_ASSET_PATTERNS: ${{ inputs.release-asset-patterns }}
+        GHRS_MAX_PAGES: ${{ inputs.max-pages }}
+        GHRS_OUTPUT_DIRECTORY: ${{ inputs.output-directory }}
+        GHRS_PUSH: ${{ inputs.push }}
+        GHRS_COMMIT_USER_NAME: ${{ inputs.commit-user-name }}
+        GHRS_COMMIT_USER_EMAIL: ${{ inputs.commit-user-email }}
