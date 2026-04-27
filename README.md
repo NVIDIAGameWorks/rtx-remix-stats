@@ -25,6 +25,10 @@ stats-dxvk-remix
 stats-toolkit-remix
 ```
 
+The generated data branch also includes a root `index.html` that links to the
+latest report for each repository. If GitHub Pages is enabled from the
+`github-repo-stats` branch, open the Pages root after the next workflow run.
+
 ## Required Secrets
 
 Add these repository secrets:
@@ -55,7 +59,7 @@ Required fine-grained token permissions:
 
 ## Viewing Reports
 
-This setup does not use GitHub Pages.
+This setup does not require GitHub Pages.
 
 To view a report:
 
