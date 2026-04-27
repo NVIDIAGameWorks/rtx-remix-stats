@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Statistics for NVIDIAGameWorks/toolkit-remix</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1110;
+      --panel: #111c17;
+      --panel-soft: #14231d;
+      --ink: #edf7f1;
+      --muted: #9caea5;
+      --line: #263831;
+      --line-strong: #3b5449;
+      --blue: #7db7ff;
+      --green: #81e2b2;
+      --cyan: #67e8f9;
+      --amber: #f4c76d;
+      --rose: #fb7185;
+      --chart-axis: #52685d;
+      --chart-grid: #22342d;
+      --chart-label: #a5b6ae;
+      --shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #101d18 0, #0d1714 260px, var(--bg) 100%);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.38;
+    }
+    a {
+      color: #9bc9ff;
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.16em;
+    }
+    .topbar, .section-nav, .report-shell, footer {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+    .topbar {
+      align-items: center;
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      padding-top: 20px;
+      padding-bottom: 12px;
+    }
+    .brand {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .brand a:hover {
+      color: var(--green);
+    }
+    .brand-mark {
+      align-items: center;
+      background: #0f1915;
+      border: 1px solid #315144;
+      border-radius: 8px;
+      color: #f1fff7;
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      font-weight: 800;
+      height: 34px;
+      justify-content: center;
+      letter-spacing: 0;
+      width: 34px;
+    }
+    .eyebrow {
+      color: var(--green);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin: 0 0 4px;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { letter-spacing: 0; line-height: 1.12; }
+    h1 {
+      font-size: 1.45rem;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    h2 { font-size: 1.22rem; margin: 0; }
+    h3 { font-size: 0.98rem; margin: 0 0 10px; }
+    .run-meta {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .run-meta span {
+      background: rgba(17, 28, 23, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+    }
+    .section-nav {
+      backdrop-filter: blur(12px);
+      background: rgba(11, 17, 16, 0.84);
+      border-bottom: 1px solid rgba(59, 84, 73, 0.62);
+      border-top: 1px solid rgba(38, 56, 49, 0.82);
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      padding-top: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .section-nav a {
+      background: #121d18;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #dcebe4;
+      flex: 0 0 auto;
+      font-size: 0.83rem;
+      font-weight: 650;
+      padding: 6px 10px;
+      text-decoration: none;
+    }
+    .section-nav a:hover {
+      border-color: var(--line-strong);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.26);
+    }
+    .report-shell {
+      display: grid;
+      gap: 16px;
+      padding-bottom: 24px;
+      padding-top: 16px;
+    }
+    .intro-panel {
+      align-items: center;
+      background:
+        linear-gradient(135deg, rgba(15, 25, 21, 0.99), rgba(18, 58, 52, 0.96));
+      border: 1px solid rgba(129, 226, 178, 0.14);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      color: #f9fbf8;
+      display: grid;
+      gap: 18px;
+      grid-template-columns: minmax(0, 0.72fr) minmax(420px, 1fr);
+      padding: 18px;
+    }
+    .intro-panel .eyebrow { color: #8de1b5; }
+    .intro-panel h2 {
+      font-size: 1.8rem;
+      margin: 0 0 7px;
+      overflow-wrap: anywhere;
+    }
+    .description {
+      color: #d7e2dc;
+      font-size: 0.95rem;
+      margin: 0;
+      max-width: 760px;
+    }
+    .meta, .note {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin: 7px 0 0;
+    }
+    .intro-panel .meta { color: #c8d6d0; }
+    .intro-panel a { color: #b7d9ff; }
+    .overview {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .overview-item {
+      background: rgba(255, 255, 255, 0.075);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 8px;
+      min-width: 0;
+      padding: 12px;
+    }
+    .overview-item span,
+    .metric span {
+      color: inherit;
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      opacity: 0.74;
+      text-transform: uppercase;
+    }
+    .overview-item strong,
+    .metric strong {
+      display: block;
+      font-size: 1.55rem;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+    .overview-item small,
+    .metric small {
+      display: block;
+      font-size: 0.78rem;
+      margin-top: 7px;
+      opacity: 0.72;
+    }
+    .overview-item.blue { border-top: 3px solid #7fb4ff; }
+    .overview-item.green { border-top: 3px solid #8de1b5; }
+    .overview-item.cyan { border-top: 3px solid #67e8f9; }
+    .overview-item.amber { border-top: 3px solid #f6c76b; }
+    .report-section {
+      background: rgba(17, 28, 23, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+      padding: 16px;
+    }
+    .section-heading {
+      align-items: end;
+      display: grid;
+      gap: 4px;
+      grid-template-columns: minmax(0, 1fr);
+      margin-bottom: 12px;
+    }
+    .metrics {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      margin: 0 0 12px;
+    }
+    .metric {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      padding: 10px 12px;
+    }
+    .metric span { color: var(--muted); opacity: 1; }
+    .metric strong { color: var(--ink); font-size: 1.38rem; }
+    .metric small { color: var(--muted); opacity: 1; }
+    .content-grid {
+      align-items: start;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: minmax(0, 1.42fr) minmax(320px, 0.82fr);
+    }
+    .chart-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 12px;
+    }
+    .chart {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 10px;
+    }
+    .chart svg {
+      display: block;
+      height: auto;
+      min-width: 560px;
+      width: 100%;
+    }
+    .legend {
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.78rem;
+      margin-top: 8px;
+    }
+    .legend i {
+      border-radius: 999px;
+      display: inline-block;
+      height: 8px;
+      margin-right: 5px;
+      width: 8px;
+    }
+    .table-panel {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 10px;
+    }
+    .wide-table { margin-top: 12px; }
+    table {
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      min-width: 420px;
+      width: 100%;
+    }
+    caption {
+      color: #d9e8e0;
+      font-size: 0.82rem;
+      font-weight: 750;
+      margin: 0 0 7px;
+      text-align: left;
+    }
+    th, td {
+      border-bottom: 1px solid #1e2c26;
+      padding: 7px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; }
+    .split {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .bar-cell {
+      min-width: 90px;
+      width: 24%;
+    }
+    .bar {
+      background: linear-gradient(90deg, #6eb6ff, #8de1b5);
+      border-radius: 999px;
+      display: block;
+      height: 7px;
+    }
+    footer {
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding-bottom: 32px;
+      padding-top: 4px;
+    }
+    @media (max-width: 980px) {
+      .intro-panel,
+      .content-grid,
+      .chart-grid,
+      .split {
+        grid-template-columns: 1fr;
+      }
+      .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .topbar, .section-nav, .report-shell, footer {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .run-meta { justify-content: flex-start; }
+      .intro-panel, .report-section { padding: 12px; }
+      .overview { grid-template-columns: 1fr; }
+      h1 { font-size: 1.22rem; }
+      .intro-panel h2 { font-size: 1.42rem; }
+      .chart svg { min-width: 520px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">GS</span>
+      <div>
+        <p class="eyebrow">Service intelligence</p>
+        <h1><a href="https://github.com/NVIDIAGameWorks/toolkit-remix">NVIDIAGameWorks/toolkit-remix</a></h1>
+      </div>
+    </div>
+    <div class="run-meta">
+      <span>2026-04-27T18:46:26Z UTC</span>
+      <span>1 snapshot(s)</span>
+    </div>
+  </header>
+  <nav class="section-nav" aria-label="Report sections">
+      <a href="#views">Views</a>
+      <a href="#clones">Clones</a>
+      <a href="#stargazers">Stars</a>
+      <a href="#forks">Forks</a>
+      <a href="#repository-counters">Counters</a>
+      <a href="#releases">Releases</a>
+      <a href="#popular">Acquisition</a>
+  </nav>
+  <main class="report-shell">
+    <section class="intro-panel" aria-label="Report summary">
+      <div>
+        <p class="eyebrow">Latest report</p>
+        <h2>NVIDIAGameWorks/toolkit-remix</h2>
+        <p class="description">RTX Remix Toolkit</p>
+        
+      </div>
+      <div class="overview"><div class="overview-item blue"><span>Views</span><strong>476</strong><small>daily total sum</small></div><div class="overview-item green"><span>Visitors</span><strong>178</strong><small>daily unique sum</small></div><div class="overview-item cyan"><span>Stars</span><strong>55</strong><small>latest counter</small></div><div class="overview-item amber"><span>Release downloads</span><strong>0</strong><small>tracked assets</small></div></div>
+    </section>
+    <section id="views" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Traffic</p>
+        <h2>Views</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Unique visitors</span><strong>178</strong><small>sum of daily uniques</small></div><div class="metric"><span>Total views</span><strong>476</strong><small>sum of daily views</small></div><div class="metric"><span>Days covered</span><strong>14</strong><small>daily points</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Daily repository views">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Daily repository views</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">25</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">50</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">75</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">100</text><text x="56.0" y="248" text-anchor="middle" class="label">04-13</text><text x="490.0" y="248" text-anchor="middle" class="label">04-20</text><text x="862.0" y="248" text-anchor="middle" class="label">04-26</text>
+    <path d="M 56.0 184.0 L 118.0 126.0 L 180.0 162.0 L 242.0 102.0 L 304.0 136.0 L 366.0 100.0 L 428.0 152.0 L 490.0 146.0 L 552.0 162.0 L 614.0 168.0 L 676.0 166.0 L 738.0 192.0 L 800.0 150.0 L 862.0 154.0" fill="none" stroke="#7db7ff" stroke-width="2.4"><title>Total views</title></path><path d="M 56.0 198.0 L 118.0 190.0 L 180.0 190.0 L 242.0 190.0 L 304.0 192.0 L 366.0 200.0 L 428.0 188.0 L 490.0 202.0 L 552.0 190.0 L 614.0 188.0 L 676.0 192.0 L 738.0 202.0 L 800.0 184.0 L 862.0 190.0" fill="none" stroke="#81e2b2" stroke-width="2.4"><title>Unique visitors</title></path>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Total views</span><span><i style="background:#81e2b2"></i>Unique visitors</span></div>
+</div>
+        <div class="table-panel"><table><caption>Recent view data</caption><thead><tr><th>Date</th><th class="num">Uniques</th><th class="num">Views</th></tr></thead><tbody><tr><td>2026-04-26</td><td class="num">14</td><td class="num">32</td></tr><tr><td>2026-04-25</td><td class="num">17</td><td class="num">34</td></tr><tr><td>2026-04-24</td><td class="num">8</td><td class="num">13</td></tr><tr><td>2026-04-23</td><td class="num">13</td><td class="num">26</td></tr><tr><td>2026-04-22</td><td class="num">15</td><td class="num">25</td></tr><tr><td>2026-04-21</td><td class="num">14</td><td class="num">28</td></tr><tr><td>2026-04-20</td><td class="num">8</td><td class="num">36</td></tr><tr><td>2026-04-19</td><td class="num">15</td><td class="num">33</td></tr><tr><td>2026-04-18</td><td class="num">9</td><td class="num">59</td></tr><tr><td>2026-04-17</td><td class="num">13</td><td class="num">41</td></tr><tr><td>2026-04-16</td><td class="num">14</td><td class="num">58</td></tr><tr><td>2026-04-15</td><td class="num">14</td><td class="num">28</td></tr><tr><td>2026-04-14</td><td class="num">14</td><td class="num">46</td></tr><tr><td>2026-04-13</td><td class="num">10</td><td class="num">17</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="clones" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Distribution</p>
+        <h2>Clones</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Unique cloners</span><strong>261</strong><small>sum of daily uniques</small></div><div class="metric"><span>Total clones</span><strong>527</strong><small>sum of daily clones</small></div><div class="metric"><span>Days covered</span><strong>14</strong><small>daily points</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Daily repository clones">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Daily repository clones</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">125</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">250</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">375</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">500</text><text x="56.0" y="248" text-anchor="middle" class="label">04-13</text><text x="490.0" y="248" text-anchor="middle" class="label">04-20</text><text x="862.0" y="248" text-anchor="middle" class="label">04-26</text>
+    <path d="M 56.0 205.6 L 118.0 212.4 L 180.0 213.2 L 242.0 211.6 L 304.0 217.2 L 366.0 216.4 L 428.0 216.0 L 490.0 203.2 L 552.0 206.8 L 614.0 106.4 L 676.0 200.4 L 738.0 203.6 L 800.0 212.0 L 862.0 216.4" fill="none" stroke="#b69cff" stroke-width="2.4"><title>Total clones</title></path><path d="M 56.0 210.4 L 118.0 214.8 L 180.0 215.6 L 242.0 213.2 L 304.0 217.2 L 366.0 216.4 L 428.0 216.4 L 490.0 208.8 L 552.0 209.6 L 614.0 180.8 L 676.0 206.4 L 738.0 209.2 L 800.0 212.4 L 862.0 216.4" fill="none" stroke="#f4c76d" stroke-width="2.4"><title>Unique cloners</title></path>
+  </svg>
+  <div class="legend"><span><i style="background:#b69cff"></i>Total clones</span><span><i style="background:#f4c76d"></i>Unique cloners</span></div>
+</div>
+        <div class="table-panel"><table><caption>Recent clone data</caption><thead><tr><th>Date</th><th class="num">Uniques</th><th class="num">Clones</th></tr></thead><tbody><tr><td>2026-04-26</td><td class="num">4</td><td class="num">4</td></tr><tr><td>2026-04-25</td><td class="num">14</td><td class="num">15</td></tr><tr><td>2026-04-24</td><td class="num">22</td><td class="num">36</td></tr><tr><td>2026-04-23</td><td class="num">29</td><td class="num">44</td></tr><tr><td>2026-04-22</td><td class="num">93</td><td class="num">279</td></tr><tr><td>2026-04-21</td><td class="num">21</td><td class="num">28</td></tr><tr><td>2026-04-20</td><td class="num">23</td><td class="num">37</td></tr><tr><td>2026-04-19</td><td class="num">4</td><td class="num">5</td></tr><tr><td>2026-04-18</td><td class="num">4</td><td class="num">4</td></tr><tr><td>2026-04-17</td><td class="num">2</td><td class="num">2</td></tr><tr><td>2026-04-16</td><td class="num">12</td><td class="num">16</td></tr><tr><td>2026-04-15</td><td class="num">6</td><td class="num">12</td></tr><tr><td>2026-04-14</td><td class="num">8</td><td class="num">14</td></tr><tr><td>2026-04-13</td><td class="num">19</td><td class="num">31</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="stargazers" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Community</p>
+        <h2>Stargazers</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Stargazers</span><strong>55</strong><small>current API listing</small></div><div class="metric"><span>Days with stars</span><strong>45</strong><small>event days</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Stargazers over time">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Stargazers over time</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">25</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">50</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">75</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">100</text><text x="56.0" y="248" text-anchor="middle" class="label">08-08</text><text x="459.0" y="248" text-anchor="middle" class="label">04-04</text><text x="862.0" y="248" text-anchor="middle" class="label">04-16</text>
+    <path d="M 56.0 210.0 L 74.3 202.0 L 92.6 196.0 L 111.0 194.0 L 129.3 192.0 L 147.6 190.0 L 165.9 188.0 L 184.2 182.0 L 202.5 180.0 L 220.9 178.0 L 239.2 176.0 L 257.5 174.0 L 275.8 172.0 L 294.1 170.0 L 312.5 168.0 L 330.8 166.0 L 349.1 164.0 L 367.4 162.0 L 385.7 160.0 L 404.0 158.0 L 422.4 156.0 L 440.7 154.0 L 459.0 152.0 L 477.3 150.0 L 495.6 148.0 L 514.0 146.0 L 532.3 144.0 L 550.6 142.0 L 568.9 140.0 L 587.2 138.0 L 605.5 136.0 L 623.9 134.0 L 642.2 132.0 L 660.5 130.0 L 678.8 128.0 L 697.1 126.0 L 715.5 124.0 L 733.8 122.0 L 752.1 120.0 L 770.4 118.0 L 788.7 116.0 L 807.0 114.0 L 825.4 112.0 L 843.7 110.0 L 862.0 108.0" fill="none" stroke="#67e8f9" stroke-width="2.4"><title>Stargazers</title></path>
+  </svg>
+  <div class="legend"><span><i style="background:#67e8f9"></i>Stargazers</span></div>
+</div>
+        <div class="table-panel"><table><caption>Recent stargazer events</caption><thead><tr><th>Date</th><th>Item</th></tr></thead><tbody><tr><td>2026-04-16</td><td><a href="https://github.com/Psyclone88">Psyclone88</a></td></tr><tr><td>2026-03-06</td><td><a href="https://github.com/olivierbriraud">olivierbriraud</a></td></tr><tr><td>2026-01-29</td><td><a href="https://github.com/Ammar-Sadaoui">Ammar-Sadaoui</a></td></tr><tr><td>2026-01-24</td><td><a href="https://github.com/glurhack">glurhack</a></td></tr><tr><td>2026-01-10</td><td><a href="https://github.com/UGVI">UGVI</a></td></tr><tr><td>2025-12-11</td><td><a href="https://github.com/Disquse">Disquse</a></td></tr><tr><td>2025-12-06</td><td><a href="https://github.com/SamuelClex">SamuelClex</a></td></tr><tr><td>2025-10-22</td><td><a href="https://github.com/NaiveInvestigator">NaiveInvestigator</a></td></tr><tr><td>2025-10-13</td><td><a href="https://github.com/bullshit">bullshit</a></td></tr><tr><td>2025-09-09</td><td><a href="https://github.com/twindragon6">twindragon6</a></td></tr><tr><td>2025-09-05</td><td><a href="https://github.com/lanxinger">lanxinger</a></td></tr><tr><td>2025-09-01</td><td><a href="https://github.com/DavidST44">DavidST44</a></td></tr><tr><td>2025-08-17</td><td><a href="https://github.com/xxRedPepperxx">xxRedPepperxx</a></td></tr><tr><td>2025-08-13</td><td><a href="https://github.com/ssoj13">ssoj13</a></td></tr><tr><td>2025-08-03</td><td><a href="https://github.com/r2d2Proton">r2d2Proton</a></td></tr><tr><td>2025-07-25</td><td><a href="https://github.com/davidldennison">davidldennison</a></td></tr><tr><td>2025-07-08</td><td><a href="https://github.com/AntonioModer">AntonioModer</a></td></tr><tr><td>2025-06-17</td><td><a href="https://github.com/CalicoApricot">CalicoApricot</a></td></tr><tr><td>2025-06-15</td><td><a href="https://github.com/Neogene">Neogene</a></td></tr><tr><td>2025-06-05</td><td><a href="https://github.com/HardwayLinka">HardwayLinka</a></td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="forks" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Community</p>
+        <h2>Forks</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Forks</span><strong>27</strong><small>current API listing</small></div><div class="metric"><span>Days with forks</span><strong>27</strong><small>event days</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Forks over time">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Forks over time</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">12</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">25</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">38</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">50</text><text x="56.0" y="248" text-anchor="middle" class="label">08-08</text><text x="459.0" y="248" text-anchor="middle" class="label">07-13</text><text x="862.0" y="248" text-anchor="middle" class="label">04-06</text>
+    <path d="M 56.0 214.0 L 87.0 210.0 L 118.0 206.0 L 149.0 202.0 L 180.0 198.0 L 211.0 194.0 L 242.0 190.0 L 273.0 186.0 L 304.0 182.0 L 335.0 178.0 L 366.0 174.0 L 397.0 170.0 L 428.0 166.0 L 459.0 162.0 L 490.0 158.0 L 521.0 154.0 L 552.0 150.0 L 583.0 146.0 L 614.0 142.0 L 645.0 138.0 L 676.0 134.0 L 707.0 130.0 L 738.0 126.0 L 769.0 122.0 L 800.0 118.0 L 831.0 114.0 L 862.0 110.0" fill="none" stroke="#fb7185" stroke-width="2.4"><title>Forks</title></path>
+  </svg>
+  <div class="legend"><span><i style="background:#fb7185"></i>Forks</span></div>
+</div>
+        <div class="table-panel"><table><caption>Recent fork events</caption><thead><tr><th>Date</th><th>Item</th></tr></thead><tbody><tr><td>2026-04-06</td><td><a href="https://github.com/jatinot/toolkit-remix">jatinot/toolkit-remix</a></td></tr><tr><td>2026-04-01</td><td><a href="https://github.com/DavidST44/toolkit-remix">DavidST44/toolkit-remix</a></td></tr><tr><td>2026-03-12</td><td><a href="https://github.com/less74812-svg/toolkit-remix">less74812-svg/toolkit-remix</a></td></tr><tr><td>2026-02-27</td><td><a href="https://github.com/Kralich/toolkit-remix">Kralich/toolkit-remix</a></td></tr><tr><td>2026-02-02</td><td><a href="https://github.com/JustinParadise22/toolkit-remix">JustinParadise22/toolkit-remix</a></td></tr><tr><td>2026-01-10</td><td><a href="https://github.com/UGVI/toolkit-remix">UGVI/toolkit-remix</a></td></tr><tr><td>2025-12-15</td><td><a href="https://github.com/Jridder1987/toolkit-remix">Jridder1987/toolkit-remix</a></td></tr><tr><td>2025-11-04</td><td><a href="https://github.com/MDDBULLDOGG/toolkit-remix-bulldogg-fork">MDDBULLDOGG/toolkit-remix-bulldogg-fork</a></td></tr><tr><td>2025-10-14</td><td><a href="https://github.com/xxdolcexx/toolkit-remix">xxdolcexx/toolkit-remix</a></td></tr><tr><td>2025-08-25</td><td><a href="https://github.com/Simon-Lajoie/toolkit-remix">Simon-Lajoie/toolkit-remix</a></td></tr><tr><td>2025-08-09</td><td><a href="https://github.com/skurtyyskirts/skurtyytewlkit">skurtyyskirts/skurtyytewlkit</a></td></tr><tr><td>2025-08-05</td><td><a href="https://github.com/CFausWhb/toolkit-remix">CFausWhb/toolkit-remix</a></td></tr><tr><td>2025-08-03</td><td><a href="https://github.com/r2d2Proton/toolkit-remix">r2d2Proton/toolkit-remix</a></td></tr><tr><td>2025-07-13</td><td><a href="https://github.com/legion-96/toolkit-remix">legion-96/toolkit-remix</a></td></tr><tr><td>2025-07-09</td><td><a href="https://github.com/Night1099/toolkit-remix">Night1099/toolkit-remix</a></td></tr><tr><td>2025-06-21</td><td><a href="https://github.com/aintjohnny/toolkit-remix">aintjohnny/toolkit-remix</a></td></tr><tr><td>2025-04-27</td><td><a href="https://github.com/abanadz/toolkit-remix-NVIDIA-DZJSAMAL">abanadz/toolkit-remix-NVIDIA-DZJSAMAL</a></td></tr><tr><td>2025-03-18</td><td><a href="https://github.com/gmh5225/toolkit-remix">gmh5225/toolkit-remix</a></td></tr><tr><td>2025-03-17</td><td><a href="https://github.com/NVIDIAGameWorks/test-toolkit-remix">NVIDIAGameWorks/test-toolkit-remix</a></td></tr><tr><td>2025-01-22</td><td><a href="https://github.com/Kuonirad/toolkit-remix">Kuonirad/toolkit-remix</a></td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="repository-counters" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Health</p>
+        <h2>Repository counters</h2>
+        <p class="note">Cumulative GitHub counters sampled on each run. Monthly values are observed deltas between snapshots.</p>
+      </div>
+      <div class="metrics"><div class="metric"><span>Stargazers</span><strong>55</strong><small>latest snapshot</small></div><div class="metric"><span>Forks</span><strong>27</strong><small>latest snapshot</small></div><div class="metric"><span>Subscribers</span><strong>18</strong><small>latest snapshot</small></div><div class="metric"><span>Open issues</span><strong>0</strong><small>latest snapshot</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Repository counters over time">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Repository counters over time</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">25</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">50</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">75</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">100</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text>
+    <circle cx="459.0" cy="108.0" r="4" fill="#67e8f9"><title>Stargazers</title></circle><circle cx="459.0" cy="164.0" r="4" fill="#fb7185"><title>Forks</title></circle><circle cx="459.0" cy="182.0" r="4" fill="#81e2b2"><title>Subscribers</title></circle><circle cx="459.0" cy="218.0" r="4" fill="#f4c76d"><title>Open issues</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#67e8f9"></i>Stargazers</span><span><i style="background:#fb7185"></i>Forks</span><span><i style="background:#81e2b2"></i>Subscribers</span><span><i style="background:#f4c76d"></i>Open issues</span></div>
+</div>
+        <div class="table-panel"><p class="note">No monthly observed repository counter changes yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+      </div>
+    </section>
+    <section id="releases" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Delivery</p>
+        <h2>Release asset downloads</h2>
+        <p class="note">GitHub exposes download counts for uploaded release assets. Generated source ZIP and TAR archives do not expose download counters.</p>
+      </div>
+      <div class="metrics"><div class="metric"><span>Tracked assets</span><strong>0</strong><small>uploaded assets</small></div><div class="metric"><span>Total downloads</span><strong>0</strong><small>latest cumulative count</small></div><div class="metric"><span>Observed this month</span><strong>0</strong><small>delta between snapshots</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Tracked release asset downloads over time">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Tracked release asset downloads over time</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">0.2</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">0.5</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">0.8</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">1</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text>
+    <circle cx="459.0" cy="218.0" r="4" fill="#7db7ff"><title>Downloads</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Downloads</span></div>
+</div>
+        <div class="table-panel"><p class="note">No top release assets.</p></div>
+      </div>
+      <div class="table-panel wide-table"><p class="note">No monthly observed release asset downloads yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+    </section>
+    <section id="popular" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Acquisition</p>
+        <h2>Top referrers and paths</h2>
+        <p class="note">GitHub reports referrers and paths as rolling 14-day windows. These snapshots are sampled window values, not additive totals.</p>
+      </div>
+      <div class="split">
+        <div class="table-panel">
+          <h3>Top referrers</h3>
+          <table><thead><tr><th class="num">Rank</th><th>Name</th><th class="num">Uniques</th><th class="num">Count</th><th>Share</th></tr></thead><tbody><tr><td class="num">1</td><td>github.com</td><td class="num">69</td><td class="num">135</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr><tr><td class="num">2</td><td>docs.omniverse.nvidia.com</td><td class="num">28</td><td class="num">62</td><td class="bar-cell"><span class="bar" style="width:45.9%"></span></td></tr><tr><td class="num">3</td><td>Google</td><td class="num">22</td><td class="num">41</td><td class="bar-cell"><span class="bar" style="width:30.4%"></span></td></tr><tr><td class="num">4</td><td>nvbugspro.nvidia.com</td><td class="num">2</td><td class="num">16</td><td class="bar-cell"><span class="bar" style="width:11.9%"></span></td></tr><tr><td class="num">5</td><td>Yahoo</td><td class="num">1</td><td class="num">6</td><td class="bar-cell"><span class="bar" style="width:4.4%"></span></td></tr><tr><td class="num">6</td><td>Bing</td><td class="num">3</td><td class="num">5</td><td class="bar-cell"><span class="bar" style="width:3.7%"></span></td></tr><tr><td class="num">7</td><td>statics.teams.cdn.office.net</td><td class="num">1</td><td class="num">1</td><td class="bar-cell"><span class="bar" style="width:0.7%"></span></td></tr></tbody></table>
+        </div>
+        <div class="table-panel">
+          <h3>Top paths</h3>
+          <table><thead><tr><th class="num">Rank</th><th>Name</th><th class="num">Uniques</th><th class="num">Count</th><th>Share</th></tr></thead><tbody><tr><td class="num">1</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix">/NVIDIAGameWorks/toolkit-remix</a></td><td class="num">104</td><td class="num">188</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr><tr><td class="num">2</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/tags">/NVIDIAGameWorks/toolkit-remix/tags</a></td><td class="num">13</td><td class="num">26</td><td class="bar-cell"><span class="bar" style="width:13.8%"></span></td></tr><tr><td class="num">3</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/tree/5ba2d37c195a38d06d7850dbfe607118c2300876">/NVIDIAGameWorks/toolkit-remix/tree/5ba2d37c195a38d06d7850dbfe607118c2300876</a></td><td class="num">19</td><td class="num">22</td><td class="bar-cell"><span class="bar" style="width:11.7%"></span></td></tr><tr><td class="num">4</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/tree/a60fa3835902fcd3964f441ca9875580321936ae">/NVIDIAGameWorks/toolkit-remix/tree/a60fa3835902fcd3964f441ca9875580321936ae</a></td><td class="num">14</td><td class="num">18</td><td class="bar-cell"><span class="bar" style="width:9.6%"></span></td></tr><tr><td class="num">5</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/releases">/NVIDIAGameWorks/toolkit-remix/releases</a></td><td class="num">10</td><td class="num">15</td><td class="bar-cell"><span class="bar" style="width:8.0%"></span></td></tr><tr><td class="num">6</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/actions">/NVIDIAGameWorks/toolkit-remix/actions</a></td><td class="num">8</td><td class="num">14</td><td class="bar-cell"><span class="bar" style="width:7.4%"></span></td></tr><tr><td class="num">7</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/blob/main/docs_dev/README.md">/NVIDIAGameWorks/toolkit-remix/blob/main/docs_dev/README.md</a></td><td class="num">11</td><td class="num">13</td><td class="bar-cell"><span class="bar" style="width:6.9%"></span></td></tr><tr><td class="num">8</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/releases/tag/1.4.2-1">/NVIDIAGameWorks/toolkit-remix/releases/tag/1.4.2-1</a></td><td class="num">9</td><td class="num">13</td><td class="bar-cell"><span class="bar" style="width:6.9%"></span></td></tr><tr><td class="num">9</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/commit/892be1c4704110de3215175686f4f4fa3f166d4e">/NVIDIAGameWorks/toolkit-remix/commit/892be1c4704110de3215175686f4f4fa3f166d4e</a></td><td class="num">8</td><td class="num">11</td><td class="bar-cell"><span class="bar" style="width:5.9%"></span></td></tr><tr><td class="num">10</td><td><a href="https://github.com/NVIDIAGameWorks/toolkit-remix/pulls">/NVIDIAGameWorks/toolkit-remix/pulls</a></td><td class="num">7</td><td class="num">11</td><td class="bar-cell"><span class="bar" style="width:5.9%"></span></td></tr></tbody></table>
+        </div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart" role="img" aria-label="Top referrers: rolling 14-day unique visitors">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Top referrers: rolling 14-day unique visitors</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">1.2</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">2.5</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">3.8</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">5</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text>
+    <circle cx="459.0" cy="20.9" r="4" fill="#7db7ff"><title>github.com</title></circle><circle cx="459.0" cy="138.0" r="4" fill="#81e2b2"><title>docs.omniverse.nvidia.com</title></circle><circle cx="459.0" cy="155.1" r="4" fill="#b69cff"><title>Google</title></circle><circle cx="459.0" cy="209.4" r="4" fill="#f4c76d"><title>Bing</title></circle><circle cx="459.0" cy="212.3" r="4" fill="#67e8f9"><title>nvbugspro.nvidia.com</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>github.com</span><span><i style="background:#81e2b2"></i>docs.omniverse.nvidia.com</span><span><i style="background:#b69cff"></i>Google</span><span><i style="background:#f4c76d"></i>Bing</span><span><i style="background:#67e8f9"></i>nvbugspro.nvidia.com</span></div>
+</div>
+        <div class="chart" role="img" aria-label="Top paths: rolling 14-day unique visitors">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Top paths: rolling 14-day unique visitors</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">2.5</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">5</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">7.5</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">10</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text>
+    <circle cx="459.0" cy="69.4" r="4" fill="#7db7ff"><title>/NVIDIAGameWorks/toolkit-remix</title></circle><circle cx="459.0" cy="190.9" r="4" fill="#81e2b2"><title>/NVIDIAGameWorks/to...50dbfe607118c2300876</title></circle><circle cx="459.0" cy="198.0" r="4" fill="#b69cff"><title>/NVIDIAGameWorks/to...441ca9875580321936ae</title></circle><circle cx="459.0" cy="199.4" r="4" fill="#f4c76d"><title>/NVIDIAGameWorks/toolkit-remix/tags</title></circle><circle cx="459.0" cy="202.3" r="4" fill="#67e8f9"><title>/NVIDIAGameWorks/to...n/docs_dev/README.md</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>/NVIDIAGameWorks/toolkit-remix</span><span><i style="background:#81e2b2"></i>/NVIDIAGameWorks/to...50dbfe607118c2300876</span><span><i style="background:#b69cff"></i>/NVIDIAGameWorks/to...441ca9875580321936ae</span><span><i style="background:#f4c76d"></i>/NVIDIAGameWorks/toolkit-remix/tags</span><span><i style="background:#67e8f9"></i>/NVIDIAGameWorks/to...n/docs_dev/README.md</span></div>
+</div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    Generated by github-stats-action-nv.
+  </footer>
+</body>
+</html>
