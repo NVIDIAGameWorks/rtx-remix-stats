@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Statistics for NVIDIAGameWorks/dxvk-remix</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1110;
+      --panel: #111c17;
+      --panel-soft: #14231d;
+      --ink: #edf7f1;
+      --muted: #9caea5;
+      --line: #263831;
+      --line-strong: #3b5449;
+      --blue: #7db7ff;
+      --green: #81e2b2;
+      --cyan: #67e8f9;
+      --amber: #f4c76d;
+      --rose: #fb7185;
+      --chart-axis: #52685d;
+      --chart-grid: #22342d;
+      --chart-label: #a5b6ae;
+      --shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #101d18 0, #0d1714 260px, var(--bg) 100%);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.38;
+    }
+    a {
+      color: #9bc9ff;
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.16em;
+    }
+    .topbar, .section-nav, .report-shell, footer {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+    .topbar {
+      align-items: center;
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      padding-top: 20px;
+      padding-bottom: 12px;
+    }
+    .brand {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .brand a:hover {
+      color: var(--green);
+    }
+    .brand-mark {
+      align-items: center;
+      background: #0f1915;
+      border: 1px solid #315144;
+      border-radius: 8px;
+      color: #f1fff7;
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      font-weight: 800;
+      height: 34px;
+      justify-content: center;
+      letter-spacing: 0;
+      width: 34px;
+    }
+    .eyebrow {
+      color: var(--green);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin: 0 0 4px;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { letter-spacing: 0; line-height: 1.12; }
+    h1 {
+      font-size: 1.45rem;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    h2 { font-size: 1.22rem; margin: 0; }
+    h3 { font-size: 0.98rem; margin: 0 0 10px; }
+    .run-meta {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .run-meta span {
+      background: rgba(17, 28, 23, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+    }
+    .section-nav {
+      backdrop-filter: blur(12px);
+      background: rgba(11, 17, 16, 0.84);
+      border-bottom: 1px solid rgba(59, 84, 73, 0.62);
+      border-top: 1px solid rgba(38, 56, 49, 0.82);
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      padding-top: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .section-nav a {
+      background: #121d18;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #dcebe4;
+      flex: 0 0 auto;
+      font-size: 0.83rem;
+      font-weight: 650;
+      padding: 6px 10px;
+      text-decoration: none;
+    }
+    .section-nav a:hover {
+      border-color: var(--line-strong);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.26);
+    }
+    .report-shell {
+      display: grid;
+      gap: 16px;
+      padding-bottom: 24px;
+      padding-top: 16px;
+    }
+    .intro-panel {
+      align-items: center;
+      background:
+        linear-gradient(135deg, rgba(15, 25, 21, 0.99), rgba(18, 58, 52, 0.96));
+      border: 1px solid rgba(129, 226, 178, 0.14);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      color: #f9fbf8;
+      display: grid;
+      gap: 18px;
+      grid-template-columns: minmax(0, 0.72fr) minmax(420px, 1fr);
+      padding: 18px;
+    }
+    .intro-panel .eyebrow { color: #8de1b5; }
+    .intro-panel h2 {
+      font-size: 1.8rem;
+      margin: 0 0 7px;
+      overflow-wrap: anywhere;
+    }
+    .description {
+      color: #d7e2dc;
+      font-size: 0.95rem;
+      margin: 0;
+      max-width: 760px;
+    }
+    .meta, .note {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin: 7px 0 0;
+    }
+    .intro-panel .meta { color: #c8d6d0; }
+    .intro-panel a { color: #b7d9ff; }
+    .overview {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .overview-item {
+      background: rgba(255, 255, 255, 0.075);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 8px;
+      min-width: 0;
+      padding: 12px;
+    }
+    .overview-item span,
+    .metric span {
+      color: inherit;
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      opacity: 0.74;
+      text-transform: uppercase;
+    }
+    .overview-item strong,
+    .metric strong {
+      display: block;
+      font-size: 1.55rem;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+    .overview-item small,
+    .metric small {
+      display: block;
+      font-size: 0.78rem;
+      margin-top: 7px;
+      opacity: 0.72;
+    }
+    .overview-item.blue { border-top: 3px solid #7fb4ff; }
+    .overview-item.green { border-top: 3px solid #8de1b5; }
+    .overview-item.cyan { border-top: 3px solid #67e8f9; }
+    .overview-item.amber { border-top: 3px solid #f6c76b; }
+    .report-section {
+      background: rgba(17, 28, 23, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+      padding: 16px;
+    }
+    .section-heading {
+      align-items: end;
+      display: grid;
+      gap: 4px;
+      grid-template-columns: minmax(0, 1fr);
+      margin-bottom: 12px;
+    }
+    .metrics {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      margin: 0 0 12px;
+    }
+    .metric {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      padding: 10px 12px;
+    }
+    .metric span { color: var(--muted); opacity: 1; }
+    .metric strong { color: var(--ink); font-size: 1.38rem; }
+    .metric small { color: var(--muted); opacity: 1; }
+    .content-grid {
+      align-items: start;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: minmax(0, 1.42fr) minmax(320px, 0.82fr);
+    }
+    .chart-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 12px;
+    }
+    .chart {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 10px;
+    }
+    .chart svg {
+      display: block;
+      height: auto;
+      min-width: 560px;
+      width: 100%;
+    }
+    .legend {
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.78rem;
+      margin-top: 8px;
+    }
+    .legend i {
+      border-radius: 999px;
+      display: inline-block;
+      height: 8px;
+      margin-right: 5px;
+      width: 8px;
+    }
+    .table-panel {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 10px;
+    }
+    .wide-table { margin-top: 12px; }
+    table {
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      min-width: 420px;
+      width: 100%;
+    }
+    caption {
+      color: #d9e8e0;
+      font-size: 0.82rem;
+      font-weight: 750;
+      margin: 0 0 7px;
+      text-align: left;
+    }
+    th, td {
+      border-bottom: 1px solid #1e2c26;
+      padding: 7px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; }
+    .split {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .bar-cell {
+      min-width: 90px;
+      width: 24%;
+    }
+    .bar {
+      background: linear-gradient(90deg, #6eb6ff, #8de1b5);
+      border-radius: 999px;
+      display: block;
+      height: 7px;
+    }
+    footer {
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding-bottom: 32px;
+      padding-top: 4px;
+    }
+    @media (max-width: 980px) {
+      .intro-panel,
+      .content-grid,
+      .chart-grid,
+      .split {
+        grid-template-columns: 1fr;
+      }
+      .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .topbar, .section-nav, .report-shell, footer {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .run-meta { justify-content: flex-start; }
+      .intro-panel, .report-section { padding: 12px; }
+      .overview { grid-template-columns: 1fr; }
+      h1 { font-size: 1.22rem; }
+      .intro-panel h2 { font-size: 1.42rem; }
+      .chart svg { min-width: 520px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">GS</span>
+      <div>
+        <p class="eyebrow">Service intelligence</p>
+        <h1><a href="https://github.com/NVIDIAGameWorks/dxvk-remix">NVIDIAGameWorks/dxvk-remix</a></h1>
+      </div>
+    </div>
+    <div class="run-meta">
+      <span>2026-04-27T18:46:14Z UTC</span>
+      <span>1 snapshot(s)</span>
+    </div>
+  </header>
+  <nav class="section-nav" aria-label="Report sections">
+      <a href="#views">Views</a>
+      <a href="#clones">Clones</a>
+      <a href="#stargazers">Stars</a>
+      <a href="#forks">Forks</a>
+      <a href="#repository-counters">Counters</a>
+      <a href="#releases">Releases</a>
+      <a href="#popular">Acquisition</a>
+  </nav>
+  <main class="report-shell">
+    <section class="intro-panel" aria-label="Report summary">
+      <div>
+        <p class="eyebrow">Latest report</p>
+        <h2>NVIDIAGameWorks/dxvk-remix</h2>
+        
+        
+      </div>
+      <div class="overview"><div class="overview-item blue"><span>Views</span><strong>1,607</strong><small>daily total sum</small></div><div class="overview-item green"><span>Visitors</span><strong>543</strong><small>daily unique sum</small></div><div class="overview-item cyan"><span>Stars</span><strong>404</strong><small>latest counter</small></div><div class="overview-item amber"><span>Release downloads</span><strong>0</strong><small>tracked assets</small></div></div>
+    </section>
+    <section id="views" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Traffic</p>
+        <h2>Views</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Unique visitors</span><strong>543</strong><small>sum of daily uniques</small></div><div class="metric"><span>Total views</span><strong>1,607</strong><small>sum of daily views</small></div><div class="metric"><span>Days covered</span><strong>14</strong><small>daily points</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Daily repository views">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Daily repository views</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">50</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">100</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">150</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">200</text><text x="56.0" y="248" text-anchor="middle" class="label">04-13</text><text x="490.0" y="248" text-anchor="middle" class="label">04-20</text><text x="862.0" y="248" text-anchor="middle" class="label">04-26</text>
+    <path d="M 56.0 117.0 L 118.0 134.0 L 180.0 52.0 L 242.0 83.0 L 304.0 96.0 L 366.0 86.0 L 428.0 88.0 L 490.0 109.0 L 552.0 118.0 L 614.0 101.0 L 676.0 122.0 L 738.0 114.0 L 800.0 121.0 L 862.0 104.0" fill="none" stroke="#7db7ff" stroke-width="2.4"><title>Total views</title></path><path d="M 56.0 175.0 L 118.0 195.0 L 180.0 172.0 L 242.0 185.0 L 304.0 186.0 L 366.0 186.0 L 428.0 177.0 L 490.0 183.0 L 552.0 173.0 L 614.0 175.0 L 676.0 190.0 L 738.0 172.0 L 800.0 166.0 L 862.0 174.0" fill="none" stroke="#81e2b2" stroke-width="2.4"><title>Unique visitors</title></path>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Total views</span><span><i style="background:#81e2b2"></i>Unique visitors</span></div>
+</div>
+        <div class="table-panel"><table><caption>Recent view data</caption><thead><tr><th>Date</th><th class="num">Uniques</th><th class="num">Views</th></tr></thead><tbody><tr><td>2026-04-26</td><td class="num">44</td><td class="num">114</td></tr><tr><td>2026-04-25</td><td class="num">52</td><td class="num">97</td></tr><tr><td>2026-04-24</td><td class="num">46</td><td class="num">104</td></tr><tr><td>2026-04-23</td><td class="num">28</td><td class="num">96</td></tr><tr><td>2026-04-22</td><td class="num">43</td><td class="num">117</td></tr><tr><td>2026-04-21</td><td class="num">45</td><td class="num">100</td></tr><tr><td>2026-04-20</td><td class="num">35</td><td class="num">109</td></tr><tr><td>2026-04-19</td><td class="num">41</td><td class="num">130</td></tr><tr><td>2026-04-18</td><td class="num">32</td><td class="num">132</td></tr><tr><td>2026-04-17</td><td class="num">32</td><td class="num">122</td></tr><tr><td>2026-04-16</td><td class="num">33</td><td class="num">135</td></tr><tr><td>2026-04-15</td><td class="num">46</td><td class="num">166</td></tr><tr><td>2026-04-14</td><td class="num">23</td><td class="num">84</td></tr><tr><td>2026-04-13</td><td class="num">43</td><td class="num">101</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="clones" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Distribution</p>
+        <h2>Clones</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Unique cloners</span><strong>522</strong><small>sum of daily uniques</small></div><div class="metric"><span>Total clones</span><strong>725</strong><small>sum of daily clones</small></div><div class="metric"><span>Days covered</span><strong>14</strong><small>daily points</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Daily repository clones">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Daily repository clones</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">50</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">100</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">150</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">200</text><text x="56.0" y="248" text-anchor="middle" class="label">04-13</text><text x="490.0" y="248" text-anchor="middle" class="label">04-20</text><text x="862.0" y="248" text-anchor="middle" class="label">04-26</text>
+    <path d="M 56.0 184.0 L 118.0 157.0 L 180.0 153.0 L 242.0 193.0 L 304.0 189.0 L 366.0 189.0 L 428.0 179.0 L 490.0 181.0 L 552.0 163.0 L 614.0 117.0 L 676.0 185.0 L 738.0 89.0 L 800.0 167.0 L 862.0 181.0" fill="none" stroke="#b69cff" stroke-width="2.4"><title>Total clones</title></path><path d="M 56.0 188.0 L 118.0 171.0 L 180.0 189.0 L 242.0 193.0 L 304.0 193.0 L 366.0 189.0 L 428.0 186.0 L 490.0 181.0 L 552.0 171.0 L 614.0 164.0 L 676.0 185.0 L 738.0 148.0 L 800.0 183.0 L 862.0 189.0" fill="none" stroke="#f4c76d" stroke-width="2.4"><title>Unique cloners</title></path>
+  </svg>
+  <div class="legend"><span><i style="background:#b69cff"></i>Total clones</span><span><i style="background:#f4c76d"></i>Unique cloners</span></div>
+</div>
+        <div class="table-panel"><table><caption>Recent clone data</caption><thead><tr><th>Date</th><th class="num">Uniques</th><th class="num">Clones</th></tr></thead><tbody><tr><td>2026-04-26</td><td class="num">29</td><td class="num">37</td></tr><tr><td>2026-04-25</td><td class="num">35</td><td class="num">51</td></tr><tr><td>2026-04-24</td><td class="num">70</td><td class="num">129</td></tr><tr><td>2026-04-23</td><td class="num">33</td><td class="num">33</td></tr><tr><td>2026-04-22</td><td class="num">54</td><td class="num">101</td></tr><tr><td>2026-04-21</td><td class="num">47</td><td class="num">55</td></tr><tr><td>2026-04-20</td><td class="num">37</td><td class="num">37</td></tr><tr><td>2026-04-19</td><td class="num">32</td><td class="num">39</td></tr><tr><td>2026-04-18</td><td class="num">29</td><td class="num">29</td></tr><tr><td>2026-04-17</td><td class="num">25</td><td class="num">29</td></tr><tr><td>2026-04-16</td><td class="num">25</td><td class="num">25</td></tr><tr><td>2026-04-15</td><td class="num">29</td><td class="num">65</td></tr><tr><td>2026-04-14</td><td class="num">47</td><td class="num">61</td></tr><tr><td>2026-04-13</td><td class="num">30</td><td class="num">34</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="stargazers" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Community</p>
+        <h2>Stargazers</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Stargazers</span><strong>404</strong><small>current API listing</small></div><div class="metric"><span>Days with stars</span><strong>239</strong><small>event days</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Stargazers over time">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Stargazers over time</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">125</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">250</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">375</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">500</text><text x="56.0" y="248" text-anchor="middle" class="label">04-12</text><text x="459.0" y="248" text-anchor="middle" class="label">05-13</text><text x="862.0" y="248" text-anchor="middle" class="label">04-15</text>
+    <path d="M 56.0 203.2 L 59.4 190.4 L 62.8 180.8 L 66.2 173.2 L 69.5 171.6 L 72.9 169.6 L 76.3 168.0 L 79.7 165.6 L 83.1 165.2 L 86.5 164.0 L 89.9 162.8 L 93.3 162.4 L 96.6 162.0 L 100.0 161.2 L 103.4 160.8 L 106.8 160.4 L 110.2 160.0 L 113.6 159.2 L 117.0 158.8 L 120.3 158.4 L 123.7 157.2 L 127.1 155.6 L 130.5 155.2 L 133.9 154.8 L 137.3 154.4 L 140.7 154.0 L 144.1 153.6 L 147.4 153.2 L 150.8 152.8 L 154.2 152.4 L 157.6 151.6 L 161.0 151.2 L 164.4 150.8 L 167.8 150.4 L 171.1 150.0 L 174.5 149.6 L 177.9 149.2 L 181.3 148.0 L 184.7 147.6 L 188.1 147.2 L 191.5 146.8 L 194.8 146.0 L 198.2 145.2 L 201.6 144.8 L 205.0 144.4 L 208.4 144.0 L 211.8 143.6 L 215.2 143.2 L 218.6 142.8 L 221.9 142.4 L 225.3 142.0 L 228.7 141.6 L 232.1 141.2 L 235.5 140.8 L 238.9 140.4 L 242.3 140.0 L 245.6 139.6 L 249.0 138.8 L 252.4 138.4 L 255.8 138.0 L 259.2 137.6 L 262.6 137.2 L 266.0 136.4 L 269.4 136.0 L 272.7 135.6 L 276.1 135.2 L 279.5 134.8 L 282.9 134.4 L 286.3 134.0 L 289.7 133.6 L 293.1 133.2 L 296.4 132.8 L 299.8 132.4 L 303.2 132.0 L 306.6 131.6 L 310.0 131.2 L 313.4 130.8 L 316.8 130.4 L 320.2 130.0 L 323.5 129.6 L 326.9 129.2 L 330.3 128.8 L 333.7 128.4 L 337.1 128.0 L 340.5 127.6 L 343.9 127.2 L 347.2 126.8 L 350.6 126.0 L 354.0 125.2 L 357.4 124.8 L 360.8 124.4 L 364.2 124.0 L 367.6 123.6 L 370.9 123.2 L 374.3 122.4 L 377.7 122.0 L 381.1 121.6 L 384.5 121.2 L 387.9 120.8 L 391.3 120.4 L 394.7 120.0 L 398.0 119.2 L 401.4 118.4 L 404.8 118.0 L 408.2 117.6 L 411.6 117.2 L 415.0 116.8 L 418.4 116.4 L 421.7 116.0 L 425.1 115.6 L 428.5 115.2 L 431.9 114.8 L 435.3 114.0 L 438.7 113.6 L 442.1 113.2 L 445.5 112.8 L 448.8 112.4 L 452.2 112.0 L 455.6 111.6 L 459.0 111.2 L 462.4 110.8 L 465.8 110.0 L 469.2 109.6 L 472.5 109.2 L 475.9 108.8 L 479.3 108.4 L 482.7 108.0 L 486.1 107.6 L 489.5 107.2 L 492.9 106.8 L 496.3 106.4 L 499.6 106.0 L 503.0 105.6 L 506.4 105.2 L 509.8 104.8 L 513.2 104.4 L 516.6 104.0 L 520.0 103.6 L 523.3 103.2 L 526.7 102.8 L 530.1 102.4 L 533.5 102.0 L 536.9 101.6 L 540.3 101.2 L 543.7 100.8 L 547.1 100.4 L 550.4 99.6 L 553.8 99.2 L 557.2 98.8 L 560.6 98.4 L 564.0 98.0 L 567.4 97.6 L 570.8 97.2 L 574.1 96.8 L 577.5 96.4 L 580.9 95.6 L 584.3 94.8 L 587.7 94.0 L 591.1 93.6 L 594.5 93.2 L 597.8 92.4 L 601.2 92.0 L 604.6 91.6 L 608.0 91.2 L 611.4 90.8 L 614.8 90.4 L 618.2 90.0 L 621.6 89.6 L 624.9 89.2 L 628.3 88.8 L 631.7 88.4 L 635.1 88.0 L 638.5 87.6 L 641.9 87.2 L 645.3 86.8 L 648.6 86.0 L 652.0 85.2 L 655.4 84.4 L 658.8 84.0 L 662.2 83.6 L 665.6 82.8 L 669.0 82.4 L 672.4 82.0 L 675.7 81.6 L 679.1 81.2 L 682.5 80.8 L 685.9 80.4 L 689.3 80.0 L 692.7 79.6 L 696.1 79.2 L 699.4 78.8 L 702.8 78.4 L 706.2 78.0 L 709.6 77.6 L 713.0 77.2 L 716.4 76.8 L 719.8 76.4 L 723.2 76.0 L 726.5 75.6 L 729.9 74.4 L 733.3 74.0 L 736.7 73.6 L 740.1 73.2 L 743.5 72.8 L 746.9 72.4 L 750.2 72.0 L 753.6 71.6 L 757.0 71.2 L 760.4 70.8 L 763.8 70.0 L 767.2 69.6 L 770.6 69.2 L 773.9 68.8 L 777.3 68.4 L 780.7 68.0 L 784.1 67.2 L 787.5 66.8 L 790.9 66.4 L 794.3 65.6 L 797.7 65.2 L 801.0 64.4 L 804.4 64.0 L 807.8 63.6 L 811.2 63.2 L 814.6 62.8 L 818.0 62.0 L 821.4 61.6 L 824.7 61.2 L 828.1 60.8 L 831.5 60.4 L 834.9 60.0 L 838.3 59.6 L 841.7 59.2 L 845.1 58.8 L 848.5 58.4 L 851.8 58.0 L 855.2 57.6 L 858.6 56.8 L 862.0 56.4" fill="none" stroke="#67e8f9" stroke-width="2.4"><title>Stargazers</title></path>
+  </svg>
+  <div class="legend"><span><i style="background:#67e8f9"></i>Stargazers</span></div>
+</div>
+        <div class="table-panel"><table><caption>Recent stargazer events</caption><thead><tr><th>Date</th><th>Item</th></tr></thead><tbody><tr><td>2026-04-15</td><td><a href="https://github.com/Taithrah">Taithrah</a></td></tr><tr><td>2026-04-03</td><td><a href="https://github.com/hungrydaddynotfake">hungrydaddynotfake</a></td></tr><tr><td>2026-04-03</td><td><a href="https://github.com/CuteLoong">CuteLoong</a></td></tr><tr><td>2026-03-28</td><td><a href="https://github.com/sigma7863">sigma7863</a></td></tr><tr><td>2026-03-25</td><td><a href="https://github.com/Trass3r">Trass3r</a></td></tr><tr><td>2026-03-22</td><td><a href="https://github.com/AffableBear">AffableBear</a></td></tr><tr><td>2026-03-18</td><td><a href="https://github.com/tillrd">tillrd</a></td></tr><tr><td>2026-03-15</td><td><a href="https://github.com/m0x1c4c4tu4">m0x1c4c4tu4</a></td></tr><tr><td>2026-03-09</td><td><a href="https://github.com/DENAZWHO">DENAZWHO</a></td></tr><tr><td>2026-03-05</td><td><a href="https://github.com/UsQuake">UsQuake</a></td></tr><tr><td>2026-03-02</td><td><a href="https://github.com/XXxiaoyizi">XXxiaoyizi</a></td></tr><tr><td>2026-03-01</td><td><a href="https://github.com/PeetlaMahesh123">PeetlaMahesh123</a></td></tr><tr><td>2026-02-26</td><td><a href="https://github.com/S4ERyn">S4ERyn</a></td></tr><tr><td>2026-02-18</td><td><a href="https://github.com/Aurified-266">Aurified-266</a></td></tr><tr><td>2026-02-17</td><td><a href="https://github.com/27hectormanuel">27hectormanuel</a></td></tr><tr><td>2026-02-17</td><td><a href="https://github.com/Alberto12345678999">Alberto12345678999</a></td></tr><tr><td>2026-02-16</td><td><a href="https://github.com/achermannagement">achermannagement</a></td></tr><tr><td>2026-02-07</td><td><a href="https://github.com/Xenon842">Xenon842</a></td></tr><tr><td>2026-02-03</td><td><a href="https://github.com/i4pptem">i4pptem</a></td></tr><tr><td>2026-01-31</td><td><a href="https://github.com/softsoundd">softsoundd</a></td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="forks" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Community</p>
+        <h2>Forks</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Forks</span><strong>98</strong><small>current API listing</small></div><div class="metric"><span>Days with forks</span><strong>85</strong><small>event days</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Forks over time">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Forks over time</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">25</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">50</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">75</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">100</text><text x="56.0" y="248" text-anchor="middle" class="label">04-12</text><text x="459.0" y="248" text-anchor="middle" class="label">11-10</text><text x="862.0" y="248" text-anchor="middle" class="label">04-11</text>
+    <path d="M 56.0 210.0 L 65.6 204.0 L 75.2 202.0 L 84.8 198.0 L 94.4 194.0 L 104.0 192.0 L 113.6 190.0 L 123.2 188.0 L 132.8 186.0 L 142.4 184.0 L 152.0 182.0 L 161.5 180.0 L 171.1 178.0 L 180.7 176.0 L 190.3 174.0 L 199.9 172.0 L 209.5 170.0 L 219.1 168.0 L 228.7 166.0 L 238.3 164.0 L 247.9 162.0 L 257.5 160.0 L 267.1 156.0 L 276.7 154.0 L 286.3 152.0 L 295.9 150.0 L 305.5 146.0 L 315.1 144.0 L 324.7 142.0 L 334.3 140.0 L 343.9 138.0 L 353.5 136.0 L 363.0 134.0 L 372.6 132.0 L 382.2 130.0 L 391.8 128.0 L 401.4 126.0 L 411.0 124.0 L 420.6 122.0 L 430.2 120.0 L 439.8 118.0 L 449.4 116.0 L 459.0 114.0 L 468.6 112.0 L 478.2 110.0 L 487.8 108.0 L 497.4 106.0 L 507.0 102.0 L 516.6 100.0 L 526.2 98.0 L 535.8 96.0 L 545.4 94.0 L 555.0 92.0 L 564.5 90.0 L 574.1 88.0 L 583.7 86.0 L 593.3 84.0 L 602.9 82.0 L 612.5 80.0 L 622.1 78.0 L 631.7 76.0 L 641.3 74.0 L 650.9 72.0 L 660.5 70.0 L 670.1 68.0 L 679.7 66.0 L 689.3 64.0 L 698.9 62.0 L 708.5 60.0 L 718.1 58.0 L 727.7 56.0 L 737.3 54.0 L 746.9 52.0 L 756.5 48.0 L 766.0 46.0 L 775.6 44.0 L 785.2 42.0 L 794.8 40.0 L 804.4 38.0 L 814.0 36.0 L 823.6 34.0 L 833.2 32.0 L 842.8 28.0 L 852.4 24.0 L 862.0 22.0" fill="none" stroke="#fb7185" stroke-width="2.4"><title>Forks</title></path>
+  </svg>
+  <div class="legend"><span><i style="background:#fb7185"></i>Forks</span></div>
+</div>
+        <div class="table-panel"><table><caption>Recent fork events</caption><thead><tr><th>Date</th><th>Item</th></tr></thead><tbody><tr><td>2026-04-11</td><td><a href="https://github.com/ALIENQuake/dxvk-remix">ALIENQuake/dxvk-remix</a></td></tr><tr><td>2026-04-07</td><td><a href="https://github.com/ABdelrahmanAlaa1/dxvk-remix-DX11">ABdelrahmanAlaa1/dxvk-remix-DX11</a></td></tr><tr><td>2026-04-07</td><td><a href="https://github.com/351papapa/dxvk-remix">351papapa/dxvk-remix</a></td></tr><tr><td>2026-04-06</td><td><a href="https://github.com/jatinot/dxvk-remix">jatinot/dxvk-remix</a></td></tr><tr><td>2026-04-06</td><td><a href="https://github.com/FrankBarretta/dxvk-remix-test">FrankBarretta/dxvk-remix-test</a></td></tr><tr><td>2026-04-02</td><td><a href="https://github.com/Veitaserum4/sa2-dxvk-remix">Veitaserum4/sa2-dxvk-remix</a></td></tr><tr><td>2026-03-29</td><td><a href="https://github.com/Kim2092/dxvk-remix-flow">Kim2092/dxvk-remix-flow</a></td></tr><tr><td>2026-03-25</td><td><a href="https://github.com/Trass3r/dxvk-remix">Trass3r/dxvk-remix</a></td></tr><tr><td>2026-03-17</td><td><a href="https://github.com/less74812-svg/dxvk-remix">less74812-svg/dxvk-remix</a></td></tr><tr><td>2026-03-13</td><td><a href="https://github.com/Night1099/dxvk-remix">Night1099/dxvk-remix</a></td></tr><tr><td>2026-03-11</td><td><a href="https://github.com/BRAGme/dxvk-remix">BRAGme/dxvk-remix</a></td></tr><tr><td>2026-03-01</td><td><a href="https://github.com/Bhanu99517/dxvk-remix">Bhanu99517/dxvk-remix</a></td></tr><tr><td>2026-02-19</td><td><a href="https://github.com/softsoundd/dxvk-remix-mirrorsedge">softsoundd/dxvk-remix-mirrorsedge</a></td></tr><tr><td>2026-01-27</td><td><a href="https://github.com/Surfndez/dxvk-remix">Surfndez/dxvk-remix</a></td></tr><tr><td>2026-01-27</td><td><a href="https://github.com/Frissj/dxvk-remix">Frissj/dxvk-remix</a></td></tr><tr><td>2026-01-19</td><td><a href="https://github.com/BinqAdams/dxvk-remix">BinqAdams/dxvk-remix</a></td></tr><tr><td>2026-01-10</td><td><a href="https://github.com/UGVI/dxvk-remix">UGVI/dxvk-remix</a></td></tr><tr><td>2026-01-06</td><td><a href="https://github.com/WinImpala67/dxvk-remix">WinImpala67/dxvk-remix</a></td></tr><tr><td>2025-12-26</td><td><a href="https://github.com/Essentuan/dxvk-remix">Essentuan/dxvk-remix</a></td></tr><tr><td>2025-12-18</td><td><a href="https://github.com/NightSightProductions/RTX-Remix-Artemis-Edition">NightSightProductions/RTX-Remix-Artemis-Edition</a></td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="repository-counters" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Health</p>
+        <h2>Repository counters</h2>
+        <p class="note">Cumulative GitHub counters sampled on each run. Monthly values are observed deltas between snapshots.</p>
+      </div>
+      <div class="metrics"><div class="metric"><span>Stargazers</span><strong>404</strong><small>latest snapshot</small></div><div class="metric"><span>Forks</span><strong>114</strong><small>latest snapshot</small></div><div class="metric"><span>Subscribers</span><strong>28</strong><small>latest snapshot</small></div><div class="metric"><span>Open issues</span><strong>33</strong><small>latest snapshot</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Repository counters over time">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Repository counters over time</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">125</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">250</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">375</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">500</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text>
+    <circle cx="459.0" cy="56.4" r="4" fill="#67e8f9"><title>Stargazers</title></circle><circle cx="459.0" cy="172.4" r="4" fill="#fb7185"><title>Forks</title></circle><circle cx="459.0" cy="206.8" r="4" fill="#81e2b2"><title>Subscribers</title></circle><circle cx="459.0" cy="204.8" r="4" fill="#f4c76d"><title>Open issues</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#67e8f9"></i>Stargazers</span><span><i style="background:#fb7185"></i>Forks</span><span><i style="background:#81e2b2"></i>Subscribers</span><span><i style="background:#f4c76d"></i>Open issues</span></div>
+</div>
+        <div class="table-panel"><p class="note">No monthly observed repository counter changes yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+      </div>
+    </section>
+    <section id="releases" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Delivery</p>
+        <h2>Release asset downloads</h2>
+        <p class="note">GitHub exposes download counts for uploaded release assets. Generated source ZIP and TAR archives do not expose download counters.</p>
+      </div>
+      <div class="metrics"><div class="metric"><span>Tracked assets</span><strong>0</strong><small>uploaded assets</small></div><div class="metric"><span>Total downloads</span><strong>0</strong><small>latest cumulative count</small></div><div class="metric"><span>Observed this month</span><strong>0</strong><small>delta between snapshots</small></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Tracked release asset downloads over time">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Tracked release asset downloads over time</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">0.2</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">0.5</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">0.8</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">1</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text>
+    <circle cx="459.0" cy="218.0" r="4" fill="#7db7ff"><title>Downloads</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Downloads</span></div>
+</div>
+        <div class="table-panel"><p class="note">No top release assets.</p></div>
+      </div>
+      <div class="table-panel wide-table"><p class="note">No monthly observed release asset downloads yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+    </section>
+    <section id="popular" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Acquisition</p>
+        <h2>Top referrers and paths</h2>
+        <p class="note">GitHub reports referrers and paths as rolling 14-day windows. These snapshots are sampled window values, not additive totals.</p>
+      </div>
+      <div class="split">
+        <div class="table-panel">
+          <h3>Top referrers</h3>
+          <table><thead><tr><th class="num">Rank</th><th>Name</th><th class="num">Uniques</th><th class="num">Count</th><th>Share</th></tr></thead><tbody><tr><td class="num">1</td><td>github.com</td><td class="num">239</td><td class="num">544</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr><tr><td class="num">2</td><td>Google</td><td class="num">73</td><td class="num">223</td><td class="bar-cell"><span class="bar" style="width:41.0%"></span></td></tr><tr><td class="num">3</td><td>youtube.com</td><td class="num">27</td><td class="num">142</td><td class="bar-cell"><span class="bar" style="width:26.1%"></span></td></tr><tr><td class="num">4</td><td>docs.omniverse.nvidia.com</td><td class="num">20</td><td class="num">23</td><td class="bar-cell"><span class="bar" style="width:4.2%"></span></td></tr><tr><td class="num">5</td><td>yandex.ru</td><td class="num">3</td><td class="num">10</td><td class="bar-cell"><span class="bar" style="width:1.8%"></span></td></tr><tr><td class="num">6</td><td>jirasw.nvidia.com</td><td class="num">6</td><td class="num">9</td><td class="bar-cell"><span class="bar" style="width:1.7%"></span></td></tr><tr><td class="num">7</td><td>app.asana.com</td><td class="num">3</td><td class="num">9</td><td class="bar-cell"><span class="bar" style="width:1.7%"></span></td></tr><tr><td class="num">8</td><td>reddit.com</td><td class="num">2</td><td class="num">6</td><td class="bar-cell"><span class="bar" style="width:1.1%"></span></td></tr><tr><td class="num">9</td><td>search.brave.com</td><td class="num">2</td><td class="num">6</td><td class="bar-cell"><span class="bar" style="width:1.1%"></span></td></tr><tr><td class="num">10</td><td>Bing</td><td class="num">2</td><td class="num">4</td><td class="bar-cell"><span class="bar" style="width:0.7%"></span></td></tr></tbody></table>
+        </div>
+        <div class="table-panel">
+          <h3>Top paths</h3>
+          <table><thead><tr><th class="num">Rank</th><th>Name</th><th class="num">Uniques</th><th class="num">Count</th><th>Share</th></tr></thead><tbody><tr><td class="num">1</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix">/NVIDIAGameWorks/dxvk-remix</a></td><td class="num">250</td><td class="num">406</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr><tr><td class="num">2</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/actions">/NVIDIAGameWorks/dxvk-remix/actions</a></td><td class="num">72</td><td class="num">233</td><td class="bar-cell"><span class="bar" style="width:57.4%"></span></td></tr><tr><td class="num">3</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/tree/eed1128e3c05ae45b7e6910c7fa3e63044fa78ce">/NVIDIAGameWorks/dxvk-remix/tree/eed1128e3c05ae45b7e6910c7fa3e63044fa78ce</a></td><td class="num">38</td><td class="num">53</td><td class="bar-cell"><span class="bar" style="width:13.1%"></span></td></tr><tr><td class="num">4</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/actions/runs/24425802714">/NVIDIAGameWorks/dxvk-remix/actions/runs/24425802714</a></td><td class="num">21</td><td class="num">49</td><td class="bar-cell"><span class="bar" style="width:12.1%"></span></td></tr><tr><td class="num">5</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/tree/bfc60357945803c6ad6d6d90c00e4f5f96b4ea5b">/NVIDIAGameWorks/dxvk-remix/tree/bfc60357945803c6ad6d6d90c00e4f5f96b4ea5b</a></td><td class="num">31</td><td class="num">48</td><td class="bar-cell"><span class="bar" style="width:11.8%"></span></td></tr><tr><td class="num">6</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/actions/runs/15737350404">/NVIDIAGameWorks/dxvk-remix/actions/runs/15737350404</a></td><td class="num">16</td><td class="num">36</td><td class="bar-cell"><span class="bar" style="width:8.9%"></span></td></tr><tr><td class="num">7</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/tags">/NVIDIAGameWorks/dxvk-remix/tags</a></td><td class="num">17</td><td class="num">35</td><td class="bar-cell"><span class="bar" style="width:8.6%"></span></td></tr><tr><td class="num">8</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/issues">/NVIDIAGameWorks/dxvk-remix/issues</a></td><td class="num">18</td><td class="num">29</td><td class="bar-cell"><span class="bar" style="width:7.1%"></span></td></tr><tr><td class="num">9</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/pulls">/NVIDIAGameWorks/dxvk-remix/pulls</a></td><td class="num">16</td><td class="num">27</td><td class="bar-cell"><span class="bar" style="width:6.7%"></span></td></tr><tr><td class="num">10</td><td><a href="https://github.com/NVIDIAGameWorks/dxvk-remix/blob/main/RtxOptions.md">/NVIDIAGameWorks/dxvk-remix/blob/main/RtxOptions.md</a></td><td class="num">15</td><td class="num">27</td><td class="bar-cell"><span class="bar" style="width:6.7%"></span></td></tr></tbody></table>
+        </div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart" role="img" aria-label="Top referrers: rolling 14-day unique visitors">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Top referrers: rolling 14-day unique visitors</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">5</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">10</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">15</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">20</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text>
+    <circle cx="459.0" cy="47.3" r="4" fill="#7db7ff"><title>github.com</title></circle><circle cx="459.0" cy="165.9" r="4" fill="#81e2b2"><title>Google</title></circle><circle cx="459.0" cy="198.7" r="4" fill="#b69cff"><title>youtube.com</title></circle><circle cx="459.0" cy="203.7" r="4" fill="#f4c76d"><title>docs.omniverse.nvidia.com</title></circle><circle cx="459.0" cy="213.7" r="4" fill="#67e8f9"><title>jirasw.nvidia.com</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>github.com</span><span><i style="background:#81e2b2"></i>Google</span><span><i style="background:#b69cff"></i>youtube.com</span><span><i style="background:#f4c76d"></i>docs.omniverse.nvidia.com</span><span><i style="background:#67e8f9"></i>jirasw.nvidia.com</span></div>
+</div>
+        <div class="chart" role="img" aria-label="Top paths: rolling 14-day unique visitors">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="56" y="13" class="label">Top paths: rolling 14-day unique visitors</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">5</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">10</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">15</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">20</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text>
+    <circle cx="459.0" cy="39.4" r="4" fill="#7db7ff"><title>/NVIDIAGameWorks/dxvk-remix</title></circle><circle cx="459.0" cy="166.6" r="4" fill="#81e2b2"><title>/NVIDIAGameWorks/dxvk-remix/actions</title></circle><circle cx="459.0" cy="190.9" r="4" fill="#b69cff"><title>/NVIDIAGameWorks/dx...910c7fa3e63044fa78ce</title></circle><circle cx="459.0" cy="195.9" r="4" fill="#f4c76d"><title>/NVIDIAGameWorks/dx...6d90c00e4f5f96b4ea5b</title></circle><circle cx="459.0" cy="203.0" r="4" fill="#67e8f9"><title>/NVIDIAGameWorks/dx...ons/runs/24425802714</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>/NVIDIAGameWorks/dxvk-remix</span><span><i style="background:#81e2b2"></i>/NVIDIAGameWorks/dxvk-remix/actions</span><span><i style="background:#b69cff"></i>/NVIDIAGameWorks/dx...910c7fa3e63044fa78ce</span><span><i style="background:#f4c76d"></i>/NVIDIAGameWorks/dx...6d90c00e4f5f96b4ea5b</span><span><i style="background:#67e8f9"></i>/NVIDIAGameWorks/dx...ons/runs/24425802714</span></div>
+</div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    Generated by github-stats-action-nv.
+  </footer>
+</body>
+</html>
