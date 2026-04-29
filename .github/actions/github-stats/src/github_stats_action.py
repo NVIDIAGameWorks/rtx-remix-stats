@@ -1013,6 +1013,67 @@ def bucketed_timeline_rows(
     return rows
 
 
+def bucket_daily_metric_rows(
+    rows: list[dict[str, Any]],
+    bucket: str,
+    value_keys: tuple[str, ...] = ("count", "uniques"),
+) -> list[dict[str, Any]]:
+    """Aggregate per-day metric rows (such as ``views`` or ``clones``) into buckets.
+
+    Inputs are rows with a ``date`` (``YYYY-MM-DD``) key plus one or more numeric
+    fields. Returns a list of rows ``{"date": bucket_label, value_key: sum, ...}``
+    sorted ascending by bucket label. ``day`` returns a shallow copy of the
+    inputs (with non-numeric fields preserved).
+    """
+    if bucket not in SUPPORTED_DELTA_BUCKETS:
+        raise ValueError(f"unsupported bucket: {bucket!r}")
+    if bucket == "day":
+        return [
+            {
+                "date": row.get("date"),
+                **{key: int_or_zero(row.get(key)) for key in value_keys},
+            }
+            for row in rows
+        ]
+    accumulator: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        day = date_part(row.get("date") or "")
+        if not day:
+            continue
+        bk = bucket_label(day, bucket)
+        if not bk:
+            continue
+        entry = accumulator.setdefault(
+            bk, {"date": bk, **{key: 0 for key in value_keys}}
+        )
+        for key in value_keys:
+            entry[key] += int_or_zero(row.get(key))
+    return [accumulator[bk] for bk in sorted(accumulator)]
+
+
+def bucket_event_counts(
+    events: list[dict[str, Any]],
+    date_key: str,
+    bucket: str,
+) -> list[dict[str, Any]]:
+    """Count events per bucket. Each event must carry a ``date_key`` string.
+
+    Returns ``[{"date": bucket_label, "count": events_in_bucket}]``.
+    """
+    if bucket not in SUPPORTED_DELTA_BUCKETS:
+        raise ValueError(f"unsupported bucket: {bucket!r}")
+    counts: dict[str, int] = {}
+    for event in events:
+        day = date_part(event.get(date_key))
+        if not day:
+            continue
+        bk = bucket_label(day, bucket)
+        if not bk:
+            continue
+        counts[bk] = counts.get(bk, 0) + 1
+    return [{"date": bk, "count": counts[bk]} for bk in sorted(counts)]
+
+
 def bucketed_total_deltas(
     observations: list[dict[str, Any]], bucket: str
 ) -> list[dict[str, Any]]:
@@ -1248,39 +1309,104 @@ def render_report(
     total_clones = sum(row["count"] for row in clones)
     total_release_downloads = sum(asset["download_count"] for asset in release_assets)
 
-    views_svg = render_line_chart(
-        "Daily repository views",
-        views,
-        [
-            ("Total views", "count", "#7db7ff"),
-            ("Unique visitors", "uniques", "#81e2b2"),
-        ],
+    def _traffic_panel(
+        rows: list[dict[str, Any]],
+        bucket: str,
+        title_prefix: str,
+        total_label: str,
+        unique_label: str,
+        total_color: str,
+        unique_color: str,
+    ) -> str:
+        bucketed = bucket_daily_metric_rows(rows, bucket, ("count", "uniques"))
+        return render_line_chart(
+            f"{title_prefix} per {bucket}",
+            bucketed,
+            [
+                (total_label, "count", total_color),
+                (unique_label, "uniques", unique_color),
+            ],
+        )
+
+    def _event_panel(
+        events: list[dict[str, Any]],
+        date_field: str,
+        bucket: str,
+        title: str,
+        series_label: str,
+        color: str,
+    ) -> str:
+        return render_stacked_bar_chart(
+            f"{title} per {bucket}",
+            bucket_event_counts(events, date_field, bucket),
+            [(series_label, "count", color)],
+            height=220,
+            y_axis_label=f"{series_label.lower()} / {bucket}",
+        )
+
+    views_tabs = render_bucket_tabs(
+        "traffic-views",
+        {
+            bucket: _traffic_panel(
+                views, bucket, "Repository views",
+                "Total views", "Unique visitors", "#7db7ff", "#81e2b2",
+            )
+            for bucket in SUPPORTED_DELTA_BUCKETS
+        },
+        default_bucket="day",
     )
-    clones_svg = render_line_chart(
-        "Daily repository clones",
-        clones,
-        [
-            ("Total clones", "count", "#b69cff"),
-            ("Unique cloners", "uniques", "#f4c76d"),
-        ],
+    clones_tabs = render_bucket_tabs(
+        "traffic-clones",
+        {
+            bucket: _traffic_panel(
+                clones, bucket, "Repository clones",
+                "Total clones", "Unique cloners", "#b69cff", "#f4c76d",
+            )
+            for bucket in SUPPORTED_DELTA_BUCKETS
+        },
+        default_bucket="day",
     )
-    stars_svg = render_line_chart(
-        "Stargazers over time",
-        stargazer_timeline,
-        [("Stargazers", "count", "#67e8f9")],
+    stars_tabs = render_bucket_tabs(
+        "stargazers",
+        {
+            bucket: _event_panel(
+                stargazers, "starred_at", bucket,
+                "New stargazers", "New stars", "#67e8f9",
+            )
+            for bucket in SUPPORTED_DELTA_BUCKETS
+        },
+        default_bucket="day",
     )
-    forks_svg = render_line_chart(
-        "Forks over time",
-        fork_timeline,
-        [("Forks", "count", "#fb7185")],
+    forks_tabs = render_bucket_tabs(
+        "forks",
+        {
+            bucket: _event_panel(
+                forks, "created_at", bucket,
+                "New forks", "New forks", "#fb7185",
+            )
+            for bucket in SUPPORTED_DELTA_BUCKETS
+        },
+        default_bucket="day",
     )
-    aggregate_svg = render_line_chart(
-        "Repository counters over time",
-        aggregate_timeline,
-        [
-            (label, key, color)
-            for key, label, color in AGGREGATE_COUNTER_SPECS
-        ],
+    aggregate_observations = aggregate_counter_observations(snapshots)
+    counter_chart_keys = [key for key, _, _ in AGGREGATE_COUNTER_SPECS]
+    counter_chart_series = [
+        (label, key, color) for key, label, color in AGGREGATE_COUNTER_SPECS
+    ]
+    aggregate_tabs = render_bucket_tabs(
+        "repository-counters-deltas",
+        {
+            bucket: render_stacked_bar_chart(
+                f"Repository counter changes per {bucket}",
+                bucketed_timeline_rows(
+                    aggregate_observations, bucket, counter_chart_keys
+                ),
+                counter_chart_series,
+                y_axis_label=f"changes / {bucket}",
+            )
+            for bucket in SUPPORTED_DELTA_BUCKETS
+        },
+        default_bucket="day",
     )
     release_downloads_svg = render_line_chart(
         "Tracked release asset downloads over time (cumulative)",
@@ -1426,7 +1552,7 @@ def render_report(
           ("Days covered", len(views), "daily points"),
       ])}
       <div class="content-grid">
-        {views_svg}
+        {views_tabs}
         <div class="table-panel">{render_daily_table("Recent view data", views, ("Uniques", "uniques"), ("Views", "count"))}</div>
       </div>
     </section>
@@ -1441,7 +1567,7 @@ def render_report(
           ("Days covered", len(clones), "daily points"),
       ])}
       <div class="content-grid">
-        {clones_svg}
+        {clones_tabs}
         <div class="table-panel">{render_daily_table("Recent clone data", clones, ("Uniques", "uniques"), ("Clones", "count"))}</div>
       </div>
     </section>
@@ -1455,7 +1581,7 @@ def render_report(
           ("Days with stars", len(stargazer_timeline), "event days"),
       ])}
       <div class="content-grid">
-        {stars_svg}
+        {stars_tabs}
         <div class="table-panel">{render_event_table("Recent stargazer events", stargazers, "starred_at", "login", "html_url")}</div>
       </div>
     </section>
@@ -1469,7 +1595,7 @@ def render_report(
           ("Days with forks", len(fork_timeline), "event days"),
       ])}
       <div class="content-grid">
-        {forks_svg}
+        {forks_tabs}
         <div class="table-panel">{render_event_table("Recent fork events", forks, "created_at", "full_name", "html_url")}</div>
       </div>
     </section>
@@ -1481,7 +1607,7 @@ def render_report(
       </div>
       {render_metric_cards(repository_counter_cards(latest))}
       <div class="content-grid">
-        {aggregate_svg}
+        {aggregate_tabs}
         <div class="table-panel">{render_monthly_delta_table("Monthly observed repository counter changes", monthly_aggregate_deltas, 40)}</div>
       </div>
     </section>
