@@ -21,7 +21,7 @@ import urllib.parse
 import urllib.request
 import uuid
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -631,6 +631,7 @@ def release_assets_from_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any
         tag_name = str(release.get("tag_name") or "")
         release_name = str(release.get("name") or tag_name)
         release_url = release.get("html_url")
+        published_at = release.get("published_at") or release.get("created_at")
         assets = release.get("assets", [])
         if not isinstance(assets, list):
             continue
@@ -640,12 +641,14 @@ def release_assets_from_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any
             asset_name = str(asset.get("name") or "")
             asset_id = asset.get("id")
             key = f"id:{asset_id}" if asset_id is not None else f"name:{tag_name}/{asset_name}"
+            family_key = asset_family(asset_name)
             rows.append(
                 {
                     "key": key,
                     "release": tag_name,
                     "release_name": release_name,
                     "release_url": release_url,
+                    "release_published_at": published_at,
                     "asset": asset_name,
                     "asset_url": asset.get("browser_download_url"),
                     "download_count": int_or_zero(asset.get("download_count")),
@@ -653,10 +656,212 @@ def release_assets_from_snapshot(snapshot: dict[str, Any]) -> list[dict[str, Any
                     "content_type": asset.get("content_type"),
                     "updated_at": asset.get("updated_at"),
                     "label": f"{tag_name} / {asset_name}" if tag_name else asset_name,
+                    "family_key": family_key,
+                    "family_label": asset_family_label(family_key),
                 }
             )
     rows.sort(key=lambda row: (row["download_count"], row["release"], row["asset"]), reverse=True)
     return rows
+
+
+VERSION_SEGMENT_RE = re.compile(r"^\d+(?:\.\d+)*$")
+
+
+def asset_family(name: str) -> str:
+    """Derive a canonical 'family' key for an asset by stripping version segments.
+
+    Examples:
+        ``remix-1.4.2-release.zip`` -> ``remix-release.zip``
+        ``remix-1.4.2-debug-symbols.zip`` -> ``remix-debug-symbols.zip``
+        ``remix-toolkit-installer-1.4.2.1.zip`` -> ``remix-toolkit-installer.zip``
+        ``remix-0.2.0.zip`` -> ``remix.zip``
+    """
+    if not name:
+        return ""
+    base, dot, ext = name.rpartition(".")
+    if not dot:
+        base, ext = name, ""
+    parts = re.split(r"[-_]+", base)
+    kept = [part for part in parts if part and not VERSION_SEGMENT_RE.match(part)]
+    cleaned = "-".join(kept) if kept else base
+    return f"{cleaned}.{ext}" if ext else cleaned
+
+
+_FAMILY_LABEL_OVERRIDES: dict[str, str] = {
+    "": "Source archive",
+}
+
+
+def asset_family_label(family_key: str) -> str:
+    """Human-friendly label for an asset family key."""
+    if family_key in _FAMILY_LABEL_OVERRIDES:
+        return _FAMILY_LABEL_OVERRIDES[family_key]
+    return family_key or "Other"
+
+
+def release_collection_totals(
+    snapshot: dict[str, Any], group_by: str
+) -> list[dict[str, Any]]:
+    """Aggregate a snapshot's release assets by collection.
+
+    ``group_by`` may be ``"release"`` (release tag) or ``"family"`` (asset family).
+    Returns rows with ``key``, ``label``, ``download_count``, ``asset_count``,
+    plus optional ``url`` and ``published_at`` for the release variant.
+    """
+    if group_by not in {"release", "family"}:
+        raise ValueError(f"unsupported group_by: {group_by!r}")
+    assets = release_assets_from_snapshot(snapshot)
+    buckets: dict[str, dict[str, Any]] = {}
+    for asset in assets:
+        if group_by == "release":
+            key = str(asset.get("release") or "")
+            label = str(asset.get("release_name") or key or "Unknown release")
+            url = asset.get("release_url")
+            published_at = asset.get("release_published_at")
+        else:
+            key = str(asset.get("family_key") or "")
+            label = str(asset.get("family_label") or "Other")
+            url = None
+            published_at = None
+        bucket = buckets.setdefault(
+            key,
+            {
+                "key": key,
+                "label": label,
+                "download_count": 0,
+                "asset_count": 0,
+                "url": url,
+                "published_at": published_at,
+                "release_count": 0,
+                "_releases": set(),
+            },
+        )
+        bucket["download_count"] += int_or_zero(asset.get("download_count"))
+        bucket["asset_count"] += 1
+        if url and not bucket.get("url"):
+            bucket["url"] = url
+        if published_at and not bucket.get("published_at"):
+            bucket["published_at"] = published_at
+        release_tag = str(asset.get("release") or "")
+        if release_tag:
+            bucket["_releases"].add(release_tag)
+    rows: list[dict[str, Any]] = []
+    for bucket in buckets.values():
+        bucket["release_count"] = len(bucket.pop("_releases"))
+        rows.append(bucket)
+    rows.sort(
+        key=lambda row: (row["download_count"], row["asset_count"]),
+        reverse=True,
+    )
+    return rows
+
+
+def release_collection_observations(
+    snapshots: list[dict[str, Any]], group_by: str
+) -> list[dict[str, Any]]:
+    """Time-ordered observations of cumulative downloads grouped by collection."""
+    observations: list[dict[str, Any]] = []
+    for snapshot in sorted(snapshots, key=lambda row: row.get("generated_at", "")):
+        day = date_part(snapshot.get("generated_at"))
+        if not day:
+            continue
+        for row in release_collection_totals(snapshot, group_by):
+            observations.append(
+                {
+                    "date": day,
+                    "key": row["key"],
+                    "label": row["label"],
+                    "count": row["download_count"],
+                    "url": row.get("url"),
+                }
+            )
+    return observations
+
+
+def collection_timeline_rows(
+    snapshots: list[dict[str, Any]],
+    group_by: str,
+    keys: list[str],
+) -> list[dict[str, Any]]:
+    """Build line-chart rows: per-day cumulative downloads for a fixed key set."""
+    rows: list[dict[str, Any]] = []
+    for snapshot in sorted(snapshots, key=lambda row: row.get("generated_at", "")):
+        day = date_part(snapshot.get("generated_at"))
+        if not day:
+            continue
+        totals = {
+            entry["key"]: entry["download_count"]
+            for entry in release_collection_totals(snapshot, group_by)
+        }
+        row: dict[str, Any] = {"date": day}
+        for key in keys:
+            row[key] = totals.get(key, 0)
+        rows.append(row)
+    return rows
+
+
+def release_asset_timeline_rows(
+    snapshots: list[dict[str, Any]], keys: list[str]
+) -> list[dict[str, Any]]:
+    """Build line-chart rows: per-day cumulative downloads for individual assets."""
+    rows: list[dict[str, Any]] = []
+    for snapshot in sorted(snapshots, key=lambda row: row.get("generated_at", "")):
+        day = date_part(snapshot.get("generated_at"))
+        if not day:
+            continue
+        totals = {
+            asset["key"]: asset["download_count"]
+            for asset in release_assets_from_snapshot(snapshot)
+        }
+        row: dict[str, Any] = {"date": day}
+        for key in keys:
+            row[key] = totals.get(key, 0)
+        rows.append(row)
+    return rows
+
+
+def build_timeline_series(
+    items: list[dict[str, Any]],
+    keys: list[str],
+    label_field: str = "label",
+) -> list[tuple[str, str, str]]:
+    """Build (label, field, color) tuples for ``render_line_chart``."""
+    by_key = {item.get("key"): item for item in items}
+    series: list[tuple[str, str, str]] = []
+    for index, key in enumerate(keys):
+        item = by_key.get(key, {})
+        label = str(item.get(label_field) or item.get("label") or key)
+        color = COLLECTION_LINE_COLORS[index % len(COLLECTION_LINE_COLORS)]
+        series.append((truncate_middle(label, 48), key, color))
+    return series
+
+
+COLLECTION_LINE_COLORS: tuple[str, ...] = (
+    "#7db7ff",
+    "#81e2b2",
+    "#f4c76d",
+    "#fb7185",
+    "#67e8f9",
+    "#b69cff",
+    "#ffa36b",
+    "#9bd35a",
+)
+
+
+def compute_share_rows(
+    rows: list[dict[str, Any]], value_key: str
+) -> list[dict[str, Any]]:
+    """Annotate rows with ``share`` (0-100 percent) and ``share_label`` strings."""
+    total = sum(int_or_zero(row.get(value_key)) for row in rows)
+    annotated: list[dict[str, Any]] = []
+    for row in rows:
+        value = int_or_zero(row.get(value_key))
+        share = 100 * value / total if total else 0.0
+        annotated_row = dict(row)
+        annotated_row["share"] = share
+        annotated_row["share_label"] = f"{share:.1f}%"
+        annotated.append(annotated_row)
+    return annotated
 
 
 def release_asset_observations(snapshots: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -697,10 +902,58 @@ def release_total_download_timeline(snapshots: list[dict[str, Any]]) -> list[dic
     return rows
 
 
-def monthly_counter_deltas(observations: list[dict[str, Any]]) -> list[dict[str, Any]]:
+SUPPORTED_DELTA_BUCKETS: tuple[str, ...] = ("day", "week", "month")
+BUCKET_ADJECTIVE: dict[str, str] = {"day": "daily", "week": "weekly", "month": "monthly"}
+BUCKET_NOUN_LABEL: dict[str, str] = {"day": "Daily", "week": "Weekly", "month": "Monthly"}
+
+
+def bucket_label(date_str: str, bucket: str) -> str:
+    """Map a YYYY-MM-DD date to a bucket label.
+
+    Buckets:
+        ``day``   -> ``2026-04-29``
+        ``week``  -> ``2026-W17`` (ISO calendar week)
+        ``month`` -> ``2026-04``
+    """
+    if not date_str:
+        return ""
+    if bucket == "day":
+        return date_str[:10] if len(date_str) >= 10 else ""
+    if bucket == "month":
+        return date_str[:7] if len(date_str) >= 7 else ""
+    if bucket == "week":
+        if len(date_str) < 10:
+            return ""
+        try:
+            year, week, _ = date.fromisoformat(date_str[:10]).isocalendar()
+        except ValueError:
+            return ""
+        return f"{year}-W{week:02d}"
+    raise ValueError(f"unsupported bucket: {bucket!r}")
+
+
+def bucketed_counter_deltas(
+    observations: list[dict[str, Any]], bucket: str = "week"
+) -> list[dict[str, Any]]:
+    """Aggregate cumulative-counter ``observations`` into per-bucket per-key deltas.
+
+    Each observation should look like::
+
+        {"date": "2026-04-15", "key": "asset-1", "label": "v1 / app.zip",
+         "count": 16, "url": "...", "release": "v1", "asset": "app.zip"}
+
+    Returns rows sorted by ``(bucket, label)`` containing the summed delta for
+    each ``(bucket, key)`` and the latest cumulative count seen for that key
+    inside the bucket.
+    """
+    if bucket not in SUPPORTED_DELTA_BUCKETS:
+        raise ValueError(f"unsupported bucket: {bucket!r}")
+
     previous: dict[str, int] = {}
-    buckets: dict[tuple[str, str], dict[str, Any]] = {}
-    for observation in sorted(observations, key=lambda row: (row.get("date", ""), row.get("key", ""))):
+    accumulator: dict[tuple[str, str], dict[str, Any]] = {}
+    for observation in sorted(
+        observations, key=lambda row: (row.get("date", ""), row.get("key", ""))
+    ):
         day = date_part(observation.get("date"))
         if not day:
             continue
@@ -709,12 +962,15 @@ def monthly_counter_deltas(observations: list[dict[str, Any]]) -> list[dict[str,
         previous_count = previous.get(key)
         delta = 0 if previous_count is None else max(0, current - previous_count)
         previous[key] = current
-        month = day[:7]
-        bucket_key = (month, key)
-        bucket = buckets.setdefault(
-            bucket_key,
+        bucket_key = bucket_label(day, bucket)
+        if not bucket_key:
+            continue
+        composite = (bucket_key, key)
+        entry = accumulator.setdefault(
+            composite,
             {
-                "month": month,
+                "bucket": bucket_key,
+                "bucket_kind": bucket,
                 "key": key,
                 "label": observation.get("label") or key,
                 "delta": 0,
@@ -724,11 +980,78 @@ def monthly_counter_deltas(observations: list[dict[str, Any]]) -> list[dict[str,
                 "asset": observation.get("asset"),
             },
         )
-        bucket["delta"] += delta
-        bucket["latest_count"] = current
+        entry["delta"] += delta
+        entry["latest_count"] = current
         if observation.get("url"):
-            bucket["url"] = observation.get("url")
-    return sorted(buckets.values(), key=lambda row: (row["month"], row["label"]))
+            entry["url"] = observation.get("url")
+    return sorted(accumulator.values(), key=lambda row: (row["bucket"], row["label"]))
+
+
+def bucketed_timeline_rows(
+    observations: list[dict[str, Any]],
+    bucket: str,
+    keys: list[str],
+) -> list[dict[str, Any]]:
+    """Pivot bucketed deltas into chart rows: ``[{"date": bucket, key: delta, ...}]``.
+
+    Buckets with no data for any of ``keys`` are omitted. A bucket is included
+    if any of the listed keys had a non-zero delta in that bucket.
+    """
+    bucket_data: dict[str, dict[str, int]] = {}
+    for row in bucketed_counter_deltas(observations, bucket):
+        bucket_data.setdefault(row["bucket"], {})[row["key"]] = int_or_zero(
+            row.get("delta")
+        )
+    rows: list[dict[str, Any]] = []
+    for bucket_key in sorted(bucket_data.keys()):
+        record: dict[str, Any] = {"date": bucket_key}
+        bucket_for_keys = bucket_data[bucket_key]
+        for key in keys:
+            record[key] = bucket_for_keys.get(key, 0)
+        if any(record[key] > 0 for key in keys):
+            rows.append(record)
+    return rows
+
+
+def bucketed_total_deltas(
+    observations: list[dict[str, Any]], bucket: str
+) -> list[dict[str, Any]]:
+    """Sum delta across all keys per bucket. Returns ``[{date, count}]`` rows."""
+    bucket_data: dict[str, int] = {}
+    for row in bucketed_counter_deltas(observations, bucket):
+        bucket_data[row["bucket"]] = bucket_data.get(row["bucket"], 0) + int_or_zero(
+            row.get("delta")
+        )
+    return [
+        {"date": bucket_key, "count": delta}
+        for bucket_key, delta in sorted(bucket_data.items())
+    ]
+
+
+def latest_bucket_delta(rows: list[dict[str, Any]]) -> int:
+    """Sum of ``delta`` for the most recent bucket present in ``rows``."""
+    if not rows:
+        return 0
+    bucket_field = "bucket" if any("bucket" in row for row in rows) else "month"
+    latest = max(str(row.get(bucket_field) or "") for row in rows)
+    if not latest:
+        return 0
+    return sum(
+        int_or_zero(row.get("delta"))
+        for row in rows
+        if str(row.get(bucket_field) or "") == latest
+    )
+
+
+def monthly_counter_deltas(observations: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Backward-compatible wrapper around :func:`bucketed_counter_deltas`.
+
+    Returned rows expose both ``bucket`` and the legacy ``month`` alias.
+    """
+    rows = bucketed_counter_deltas(observations, "month")
+    for row in rows:
+        row["month"] = row["bucket"]
+    return rows
 
 
 def build_summary(
@@ -891,7 +1214,28 @@ def render_report(
     monthly_aggregate_deltas = monthly_counter_deltas(aggregate_counter_observations(snapshots))
     release_assets = release_assets_from_snapshot(latest)
     release_total_timeline = release_total_download_timeline(snapshots)
-    monthly_release_downloads = monthly_counter_deltas(release_asset_observations(snapshots))
+    asset_observations = release_asset_observations(snapshots)
+    release_observations = release_collection_observations(snapshots, "release")
+    family_observations = release_collection_observations(snapshots, "family")
+    monthly_release_downloads = monthly_counter_deltas(asset_observations)
+    weekly_release_downloads = bucketed_counter_deltas(asset_observations, "week")
+    daily_release_downloads = bucketed_counter_deltas(asset_observations, "day")
+    monthly_release_collection_deltas = monthly_counter_deltas(release_observations)
+    monthly_family_collection_deltas = monthly_counter_deltas(family_observations)
+    release_collections = release_collection_totals(latest, "release")
+    family_collections = release_collection_totals(latest, "family")
+    top_asset_keys = [row["key"] for row in release_assets[:8]]
+    top_release_keys = [row["key"] for row in release_collections[:6]]
+    top_family_keys = [row["key"] for row in family_collections[:6]]
+    asset_timeline_series = build_timeline_series(
+        release_assets[:8], top_asset_keys, "label"
+    )
+    release_timeline_series = build_timeline_series(
+        release_collections[:6], top_release_keys, "label"
+    )
+    family_timeline_series = build_timeline_series(
+        family_collections[:6], top_family_keys, "label"
+    )
     referrer_items = latest.get("traffic", {}).get("popular_referrers", [])
     path_items = latest.get("traffic", {}).get("popular_paths", [])
     server_url = config.github_server_url if config else "https://github.com"
@@ -939,10 +1283,77 @@ def render_report(
         ],
     )
     release_downloads_svg = render_line_chart(
-        "Tracked release asset downloads over time",
+        "Tracked release asset downloads over time (cumulative)",
         release_total_timeline,
-        [("Downloads", "count", "#7db7ff")],
+        [("Cumulative", "count", "#7db7ff")],
     )
+
+    def _total_panel(bucket: str) -> str:
+        return render_stacked_bar_chart(
+            f"Downloads per {bucket} (delta between snapshots)",
+            bucketed_total_deltas(asset_observations, bucket),
+            [("Downloads added", "count", "#81e2b2")],
+            height=220,
+            y_axis_label=f"downloads / {bucket}",
+        )
+
+    def _series_panel(
+        observations: list[dict[str, Any]],
+        keys: list[str],
+        series: list[tuple[str, str, str]],
+        title_prefix: str,
+        bucket: str,
+    ) -> str:
+        return render_stacked_bar_chart(
+            f"{title_prefix} {BUCKET_ADJECTIVE[bucket]} downloads (delta)",
+            bucketed_timeline_rows(observations, bucket, keys),
+            series,
+            y_axis_label=f"downloads / {bucket}",
+        )
+
+    release_total_tabs = render_bucket_tabs(
+        "release-total-deltas",
+        {bucket: _total_panel(bucket) for bucket in SUPPORTED_DELTA_BUCKETS},
+        default_bucket="day",
+    )
+    release_assets_tabs = render_bucket_tabs(
+        "releases-by-asset-deltas",
+        {
+            bucket: _series_panel(
+                asset_observations, top_asset_keys, asset_timeline_series,
+                "Top assets", bucket,
+            )
+            for bucket in SUPPORTED_DELTA_BUCKETS
+        },
+        default_bucket="day",
+    )
+    release_by_release_tabs = render_bucket_tabs(
+        "releases-by-release-deltas",
+        {
+            bucket: _series_panel(
+                release_observations, top_release_keys, release_timeline_series,
+                "Top releases", bucket,
+            )
+            for bucket in SUPPORTED_DELTA_BUCKETS
+        },
+        default_bucket="day",
+    )
+    release_by_family_tabs = render_bucket_tabs(
+        "releases-by-family-deltas",
+        {
+            bucket: _series_panel(
+                family_observations, top_family_keys, family_timeline_series,
+                "Asset families", bucket,
+            )
+            for bucket in SUPPORTED_DELTA_BUCKETS
+        },
+        default_bucket="day",
+    )
+    release_release_count = len({row["release"] for row in release_assets if row.get("release")})
+    release_family_count = len({row["family_key"] for row in release_assets if row.get("family_key")})
+    asset_share_rows = compute_share_rows(release_assets, "download_count")
+    release_collection_share_rows = compute_share_rows(release_collections, "download_count")
+    family_collection_share_rows = compute_share_rows(family_collections, "download_count")
     referrer_history_svg = render_popularity_chart(
         snapshots,
         "popular_referrers",
@@ -1078,18 +1489,98 @@ def render_report(
       <div class="section-heading">
         <p class="eyebrow">Delivery</p>
         <h2>Release asset downloads</h2>
-        <p class="note">GitHub exposes download counts for uploaded release assets. Generated source ZIP and TAR archives do not expose download counters.</p>
+        <p class="note">GitHub exposes download counts for uploaded release assets. Generated source ZIP and TAR archives do not expose download counters. Each asset is also grouped into a release (collection by tag) and an asset family (collection by canonical name).</p>
       </div>
       {render_metric_cards([
           ("Tracked assets", len(release_assets), "uploaded assets"),
+          ("Releases", release_release_count, "tags with assets"),
+          ("Asset families", release_family_count, "canonical names"),
           ("Total downloads", total_release_downloads, "latest cumulative count"),
-          ("Observed this month", current_month_delta(monthly_release_downloads), "delta between snapshots"),
+          ("Today", latest_bucket_delta(daily_release_downloads), "latest day-over-day delta"),
+          ("This week", latest_bucket_delta(weekly_release_downloads), "delta across all assets"),
+          ("This month", current_month_delta(monthly_release_downloads), "delta across all assets"),
       ])}
+      {release_total_tabs}
       <div class="content-grid">
         {release_downloads_svg}
-        <div class="table-panel">{render_release_asset_table("Top release assets", release_assets)}</div>
+        <div class="table-panel">{render_monthly_delta_table("Monthly observed release asset downloads", monthly_release_downloads, 40)}</div>
       </div>
-      <div class="table-panel wide-table">{render_monthly_delta_table("Monthly observed release asset downloads", monthly_release_downloads, 60)}</div>
+      <div class="release-subsections">
+        <div class="release-subsection" id="releases-by-asset">
+          <h3>By individual asset</h3>
+          <p class="note">Top {min(8, len(release_assets))} of {len(release_assets)} tracked assets, ranked by total downloads. The chart on the left shows download deltas between snapshots (use the granularity toggle to switch between daily, weekly and monthly buckets); the bars on the right rank assets by their lifetime total.</p>
+          <div class="content-grid">
+            {release_assets_tabs}
+            {render_horizontal_bar_chart(
+                "Top assets by downloads",
+                asset_share_rows,
+                "label",
+                "download_count",
+                color="#7db7ff",
+                limit=10,
+                secondary_key="share_label",
+                secondary_label="Share of total",
+                label_url_key="asset_url",
+            )}
+          </div>
+          <div class="table-panel wide-table">{render_release_asset_table("Top assets", asset_share_rows, limit=30)}</div>
+        </div>
+        <div class="release-subsection" id="releases-by-release">
+          <h3>By release (collection of assets per tag)</h3>
+          <p class="note">{release_release_count} release tag(s) carry uploaded assets. Cumulative downloads roll up every asset attached to a tag. The bar chart shows download deltas per tag at the selected granularity.</p>
+          <div class="content-grid">
+            {release_by_release_tabs}
+            {render_horizontal_bar_chart(
+                "Top releases by downloads",
+                release_collection_share_rows,
+                "label",
+                "download_count",
+                color="#81e2b2",
+                limit=12,
+                secondary_key="share_label",
+                secondary_label="Share of total",
+                label_url_key="url",
+            )}
+          </div>
+          <div class="table-panel wide-table">{render_release_collection_table(
+              "Releases ranked by total downloads",
+              release_collection_share_rows,
+              limit=40,
+          )}</div>
+          <div class="table-panel wide-table">{render_monthly_delta_table(
+              "Monthly observed downloads by release",
+              monthly_release_collection_deltas,
+              40,
+          )}</div>
+        </div>
+        <div class="release-subsection" id="releases-by-family">
+          <h3>By asset family (collection of versions per canonical name)</h3>
+          <p class="note">Family keys are derived by stripping version segments from each asset name. They group the same artifact across releases, e.g. <code>{esc("remix-1.4.2-release.zip")}</code> &rarr; <code>{esc("remix-release.zip")}</code>. The bar chart shows download deltas summed across every version that belongs to each family, at the selected granularity.</p>
+          <div class="content-grid">
+            {release_by_family_tabs}
+            {render_horizontal_bar_chart(
+                "Top asset families by downloads",
+                family_collection_share_rows,
+                "label",
+                "download_count",
+                color="#f4c76d",
+                limit=12,
+                secondary_key="share_label",
+                secondary_label="Share of total",
+            )}
+          </div>
+          <div class="table-panel wide-table">{render_family_collection_table(
+              "Asset families ranked by total downloads",
+              family_collection_share_rows,
+              limit=40,
+          )}</div>
+          <div class="table-panel wide-table">{render_monthly_delta_table(
+              "Monthly observed downloads by asset family",
+              monthly_family_collection_deltas,
+              40,
+          )}</div>
+        </div>
+      </div>
     </section>
     <section id="popular" class="report-section">
       <div class="section-heading">
@@ -1458,6 +1949,171 @@ REPORT_CSS = """    :root {
       display: block;
       height: 7px;
     }
+    .bucket-tabs {
+      display: grid;
+      gap: 10px;
+      position: relative;
+    }
+    .bucket-tabs > .bucket-radio {
+      height: 1px;
+      margin: -1px;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+      position: absolute;
+      width: 1px;
+    }
+    .bucket-tab-strip {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.74rem;
+      gap: 6px;
+      letter-spacing: 0;
+    }
+    .bucket-tab-strip::before {
+      content: "Granularity:";
+      font-weight: 700;
+      letter-spacing: 0;
+      margin-right: 4px;
+      text-transform: uppercase;
+    }
+    .bucket-tab-label {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #dcebe4;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      padding: 5px 13px;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+      user-select: none;
+    }
+    .bucket-tab-label:hover {
+      border-color: var(--line-strong);
+      color: var(--green);
+    }
+    .bucket-tabs > .bucket-radio:focus-visible + .bucket-tab-strip > .bucket-tab-label,
+    .bucket-tabs > .bucket-radio:focus-visible ~ .bucket-tab-strip > .bucket-tab-label {
+      outline: 2px solid transparent;
+    }
+    .bucket-tabs:has(> .bucket-radio[id$="-day"]:checked) .bucket-tab-strip > label[data-bucket="day"],
+    .bucket-tabs:has(> .bucket-radio[id$="-week"]:checked) .bucket-tab-strip > label[data-bucket="week"],
+    .bucket-tabs:has(> .bucket-radio[id$="-month"]:checked) .bucket-tab-strip > label[data-bucket="month"] {
+      background: var(--green);
+      border-color: var(--green);
+      color: #0d1714;
+    }
+    .bucket-tabs > .bucket-panel { display: none; }
+    .bucket-tabs > .bucket-radio[id$="-day"]:checked ~ .bucket-panel[data-bucket="day"],
+    .bucket-tabs > .bucket-radio[id$="-week"]:checked ~ .bucket-panel[data-bucket="week"],
+    .bucket-tabs > .bucket-radio[id$="-month"]:checked ~ .bucket-panel[data-bucket="month"] {
+      display: block;
+    }
+    .release-subsections {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .release-subsection {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .release-subsection h3 {
+      margin: 0 0 4px;
+    }
+    .release-subsection .note {
+      margin: 0 0 12px;
+    }
+    .release-subsection .content-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+    }
+    .hbar-chart {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      padding: 12px;
+    }
+    .hbar-chart .chart-title {
+      color: #d9e8e0;
+      font-size: 0.82rem;
+      font-weight: 750;
+      letter-spacing: 0;
+      margin: 0 0 4px;
+    }
+    .hbar-row {
+      align-items: center;
+      column-gap: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.6fr) auto auto;
+      min-width: 0;
+      row-gap: 0;
+    }
+    .hbar-label {
+      color: #dcebe4;
+      font-size: 0.82rem;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .hbar-label a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .hbar-label a:hover {
+      color: var(--green);
+      text-decoration: underline;
+    }
+    .hbar-track {
+      background: rgba(125, 183, 255, 0.12);
+      border-radius: 999px;
+      height: 8px;
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .hbar-fill {
+      border-radius: 999px;
+      display: block;
+      height: 100%;
+    }
+    .hbar-value {
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      text-align: right;
+    }
+    .hbar-secondary {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    @media (max-width: 720px) {
+      .hbar-row {
+        grid-template-columns: minmax(0, 1.2fr) auto;
+        row-gap: 4px;
+      }
+      .hbar-track {
+        grid-column: 1 / -1;
+      }
+      .hbar-value {
+        grid-column: auto;
+      }
+      .hbar-secondary {
+        grid-column: auto;
+      }
+    }
     footer {
       color: var(--muted);
       font-size: 0.82rem;
@@ -1468,7 +2124,8 @@ REPORT_CSS = """    :root {
       .intro-panel,
       .content-grid,
       .chart-grid,
-      .split {
+      .split,
+      .release-subsection .content-grid {
         grid-template-columns: 1fr;
       }
       .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1621,27 +2278,107 @@ def current_month_delta(rows: list[dict[str, Any]]) -> int:
 def render_release_asset_table(title: str, rows: list[dict[str, Any]], limit: int = 30) -> str:
     if not rows:
         return f'<p class="note">No {esc(title.lower())}.</p>'
+    visible = list(rows[:limit])
+    max_downloads = max(
+        (int_or_zero(row.get("download_count")) for row in visible), default=1
+    ) or 1
     body = []
-    for row in rows[:limit]:
+    for row in visible:
         asset = str(row.get("asset") or "")
         asset_url = row.get("asset_url")
         release = str(row.get("release") or "")
         release_url = row.get("release_url")
+        family_label = str(row.get("family_label") or "")
         rendered_asset = f'<a href="{attr(asset_url)}">{esc(asset)}</a>' if asset_url else esc(asset)
         rendered_release = (
             f'<a href="{attr(release_url)}">{esc(release)}</a>' if release_url else esc(release)
         )
+        download_count = int_or_zero(row.get("download_count"))
+        share_pct = 100 * download_count / max(1, max_downloads)
         body.append(
             "<tr>"
             f"<td>{rendered_release}</td>"
             f"<td>{rendered_asset}</td>"
-            f'<td class="num">{format_int(int_or_zero(row.get("download_count")))}</td>'
+            f"<td>{esc(family_label)}</td>"
+            f'<td class="num">{format_int(download_count)}</td>'
             f'<td class="num">{format_bytes(int_or_zero(row.get("size")))}</td>'
+            f'<td class="bar-cell"><span class="bar" style="width:{share_pct:.1f}%"></span></td>'
             "</tr>"
         )
     return (
         f"<table><caption>{esc(title)}</caption><thead><tr><th>Release</th>"
-        '<th>Asset</th><th class="num">Downloads</th><th class="num">Size</th>'
+        '<th>Asset</th><th>Family</th><th class="num">Downloads</th><th class="num">Size</th>'
+        '<th>Share</th>'
+        f"</tr></thead><tbody>{''.join(body)}</tbody></table>"
+    )
+
+
+def render_release_collection_table(
+    title: str, rows: list[dict[str, Any]], limit: int = 40
+) -> str:
+    if not rows:
+        return f'<p class="note">No {esc(title.lower())}.</p>'
+    visible = list(rows[:limit])
+    max_downloads = max(
+        (int_or_zero(row.get("download_count")) for row in visible), default=1
+    ) or 1
+    body = []
+    for row in visible:
+        label = str(row.get("label") or row.get("key") or "")
+        url = row.get("url")
+        rendered_label = (
+            f'<a href="{attr(url)}">{esc(label)}</a>' if url else esc(label)
+        )
+        downloads = int_or_zero(row.get("download_count"))
+        share_pct = 100 * downloads / max(1, max_downloads)
+        published = row.get("published_at") or ""
+        body.append(
+            "<tr>"
+            f"<td>{rendered_label}</td>"
+            f"<td>{esc(date_part(published) or '')}</td>"
+            f'<td class="num">{format_int(int_or_zero(row.get("asset_count")))}</td>'
+            f'<td class="num">{format_int(downloads)}</td>'
+            f'<td class="num">{esc(str(row.get("share_label") or ""))}</td>'
+            f'<td class="bar-cell"><span class="bar" style="width:{share_pct:.1f}%"></span></td>'
+            "</tr>"
+        )
+    return (
+        f"<table><caption>{esc(title)}</caption><thead><tr><th>Release</th>"
+        '<th>Published</th><th class="num">Assets</th>'
+        '<th class="num">Downloads</th><th class="num">Share</th><th>Distribution</th>'
+        f"</tr></thead><tbody>{''.join(body)}</tbody></table>"
+    )
+
+
+def render_family_collection_table(
+    title: str, rows: list[dict[str, Any]], limit: int = 40
+) -> str:
+    if not rows:
+        return f'<p class="note">No {esc(title.lower())}.</p>'
+    visible = list(rows[:limit])
+    max_downloads = max(
+        (int_or_zero(row.get("download_count")) for row in visible), default=1
+    ) or 1
+    body = []
+    for row in visible:
+        label = str(row.get("label") or row.get("key") or "")
+        downloads = int_or_zero(row.get("download_count"))
+        share_pct = 100 * downloads / max(1, max_downloads)
+        body.append(
+            "<tr>"
+            f"<td>{esc(label)}</td>"
+            f'<td class="num">{format_int(int_or_zero(row.get("asset_count")))}</td>'
+            f'<td class="num">{format_int(int_or_zero(row.get("release_count")))}</td>'
+            f'<td class="num">{format_int(downloads)}</td>'
+            f'<td class="num">{esc(str(row.get("share_label") or ""))}</td>'
+            f'<td class="bar-cell"><span class="bar" style="width:{share_pct:.1f}%"></span></td>'
+            "</tr>"
+        )
+    return (
+        f"<table><caption>{esc(title)}</caption><thead><tr><th>Family</th>"
+        '<th class="num">Assets</th><th class="num">Releases</th>'
+        '<th class="num">Downloads</th><th class="num">Share</th>'
+        '<th>Distribution</th>'
         f"</tr></thead><tbody>{''.join(body)}</tbody></table>"
     )
 
@@ -1675,6 +2412,225 @@ def render_monthly_delta_table(
     )
 
 
+def render_bucket_tabs(
+    group_id: str,
+    panels_by_bucket: dict[str, str],
+    default_bucket: str = "day",
+) -> str:
+    """Render a CSS-only tab control that switches between bucket-specific HTML panels.
+
+    Uses radio inputs + sibling selectors for panel visibility and ``:has()`` for
+    the active-tab style. Falls back gracefully on browsers without ``:has()``
+    (panels still toggle, but the active tab pill won't update visually).
+    """
+    available = [
+        (bucket, BUCKET_NOUN_LABEL[bucket])
+        for bucket in SUPPORTED_DELTA_BUCKETS
+        if panels_by_bucket.get(bucket)
+    ]
+    if not available:
+        return ""
+    if len(available) == 1:
+        return panels_by_bucket[available[0][0]]
+    if default_bucket not in {bucket for bucket, _ in available}:
+        default_bucket = available[0][0]
+
+    inputs_html: list[str] = []
+    labels_html: list[str] = []
+    panels_html: list[str] = []
+    for bucket, label in available:
+        input_id = f"bt-{group_id}-{bucket}"
+        checked = " checked" if bucket == default_bucket else ""
+        inputs_html.append(
+            f'<input type="radio" name="bt-{attr(group_id)}" id="{attr(input_id)}"'
+            f'{checked} class="bucket-radio" />'
+        )
+        labels_html.append(
+            f'<label for="{attr(input_id)}" data-bucket="{attr(bucket)}" '
+            f'class="bucket-tab-label">{esc(label)}</label>'
+        )
+        panels_html.append(
+            f'<div class="bucket-panel" data-bucket="{attr(bucket)}">{panels_by_bucket[bucket]}</div>'
+        )
+    return (
+        '<div class="bucket-tabs">'
+        + "".join(inputs_html)
+        + '<div class="bucket-tab-strip" role="tablist">'
+        + "".join(labels_html)
+        + "</div>"
+        + "".join(panels_html)
+        + "</div>"
+    )
+
+
+def render_stacked_bar_chart(
+    title: str,
+    rows: list[dict[str, Any]],
+    series: list[tuple[str, str, str]],
+    height: int = 260,
+    width: int = 880,
+    y_axis_label: str = "",
+) -> str:
+    """Vertical stacked bars: one bar per row, stack components per series.
+
+    Each ``row`` provides a ``date`` (the bucket label) and a value per
+    ``series`` field. Rows with all-zero series are still rendered to keep the
+    x-axis continuous.
+    """
+    if not rows or not series:
+        return f'<p class="note">No data available for {esc(title.lower())}.</p>'
+
+    padding_left = 56
+    padding_right = 18
+    padding_top = 22
+    padding_bottom = 42
+    chart_width = width - padding_left - padding_right
+    chart_height = height - padding_top - padding_bottom
+
+    max_total = max(
+        (
+            sum(int_or_zero(row.get(field)) for _, field, _ in series)
+            for row in rows
+        ),
+        default=0,
+    )
+    max_total = max(1, max_total)
+    y_top = nice_ceiling(max_total)
+
+    bar_count = len(rows)
+    slot_width = chart_width / max(bar_count, 1)
+    bar_pad = min(slot_width * 0.22, 16)
+    bar_width = max(slot_width - bar_pad, 1.0)
+
+    parts: list[str] = [
+        f'<line x1="{padding_left}" y1="{padding_top}" x2="{padding_left}" y2="{padding_top + chart_height}" class="axis" />',
+        f'<line x1="{padding_left}" y1="{padding_top + chart_height}" x2="{padding_left + chart_width}" y2="{padding_top + chart_height}" class="axis" />',
+    ]
+    for fraction in (0.25, 0.5, 0.75, 1.0):
+        y = padding_top + chart_height - fraction * chart_height
+        v = y_top * fraction
+        parts.append(
+            f'<line x1="{padding_left}" y1="{y:.1f}" x2="{padding_left + chart_width}" y2="{y:.1f}" class="grid" />'
+        )
+        parts.append(
+            f'<text x="{padding_left - 8}" y="{y + 4:.1f}" text-anchor="end" class="label">{format_axis(v)}</text>'
+        )
+
+    if bar_count <= 12:
+        label_indexes = list(range(bar_count))
+    else:
+        step = max(1, bar_count // 8)
+        label_indexes = sorted({0, bar_count - 1, *range(0, bar_count, step)})
+
+    for index, row in enumerate(rows):
+        slot_left = padding_left + index * slot_width
+        x = slot_left + (slot_width - bar_width) / 2
+        cumulative_value = 0
+        for label, field, color in series:
+            value = int_or_zero(row.get(field))
+            if value <= 0:
+                continue
+            seg_height = (value / y_top) * chart_height
+            cumulative_value += value
+            bar_total_height = (cumulative_value / y_top) * chart_height
+            seg_y = padding_top + chart_height - bar_total_height
+            parts.append(
+                f'<rect x="{x:.1f}" y="{seg_y:.1f}" width="{bar_width:.1f}" '
+                f'height="{seg_height:.1f}" fill="{attr(color)}" rx="2" ry="2">'
+                f'<title>{esc(label)} ({esc(row.get("date", ""))}): {format_int(value)}</title>'
+                "</rect>"
+            )
+        if index in label_indexes:
+            cx = slot_left + slot_width / 2
+            parts.append(
+                f'<text x="{cx:.1f}" y="{height - 12}" text-anchor="middle" class="label">'
+                f'{esc(short_date(row.get("date", "")))}</text>'
+            )
+
+    legend = "".join(
+        f'<span><i style="background:{attr(color)}"></i>{esc(label)}</span>'
+        for label, _, color in series
+    )
+
+    y_axis_html = (
+        f'<text x="14" y="{padding_top - 6}" class="label">{esc(y_axis_label)}</text>'
+        if y_axis_label
+        else ""
+    )
+
+    return f"""<div class="chart" role="img" aria-label="{attr(title)}">
+  <svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis {{ stroke: var(--chart-axis, #52685d); stroke-width: 1; }}
+      .grid {{ stroke: var(--chart-grid, #22342d); stroke-width: 1; }}
+      .label {{ fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
+    </style>
+    <text x="{padding_left}" y="13" class="label">{esc(title)}</text>
+    {y_axis_html}
+    {''.join(parts)}
+  </svg>
+  <div class="legend">{legend}</div>
+</div>"""
+
+
+def render_horizontal_bar_chart(
+    title: str,
+    rows: list[dict[str, Any]],
+    label_key: str,
+    value_key: str,
+    color: str = "#7db7ff",
+    limit: int = 12,
+    secondary_key: str | None = None,
+    value_formatter=None,
+    secondary_formatter=None,
+    secondary_label: str = "",
+    label_url_key: str | None = None,
+) -> str:
+    if not rows:
+        return f'<p class="note">No data available for {esc(title.lower())}.</p>'
+    visible = list(rows[:limit])
+    max_value = max((int_or_zero(row.get(value_key)) for row in visible), default=1) or 1
+    formatter = value_formatter or format_int
+    items: list[str] = []
+    for row in visible:
+        label = str(row.get(label_key) or "")
+        value = int_or_zero(row.get(value_key))
+        width_pct = 100 * value / max(1, max_value)
+        url = row.get(label_url_key) if label_url_key else None
+        rendered_label = (
+            f'<a href="{attr(url)}">{esc(label)}</a>' if url else esc(label)
+        )
+        secondary_html = ""
+        if secondary_key:
+            secondary_value = row.get(secondary_key)
+            secondary_text = (
+                secondary_formatter(secondary_value)
+                if secondary_formatter
+                else (str(secondary_value) if secondary_value is not None else "")
+            )
+            if secondary_text:
+                secondary_html = (
+                    f'<span class="hbar-secondary"'
+                    f' title="{attr(secondary_label)}">{esc(secondary_text)}</span>'
+                )
+        items.append(
+            '<div class="hbar-row">'
+            f'<span class="hbar-label">{rendered_label}</span>'
+            '<span class="hbar-track" aria-hidden="true">'
+            f'<span class="hbar-fill" style="width:{width_pct:.1f}%; background:{attr(color)}"></span>'
+            "</span>"
+            f'<span class="hbar-value">{esc(formatter(value))}</span>'
+            f"{secondary_html}"
+            "</div>"
+        )
+    return (
+        '<div class="hbar-chart" role="img" aria-label="' + attr(title) + '">'
+        f'<p class="chart-title">{esc(title)}</p>'
+        + "".join(items)
+        + "</div>"
+    )
+
+
 def render_line_chart(
     title: str,
     rows: list[dict[str, Any]],
@@ -1682,7 +2638,7 @@ def render_line_chart(
     height: int = 260,
     width: int = 880,
 ) -> str:
-    if not rows:
+    if not rows or not series:
         return f'<p class="note">No data available for {esc(title.lower())}.</p>'
 
     padding_left = 56
@@ -1692,7 +2648,10 @@ def render_line_chart(
     chart_width = width - padding_left - padding_right
     chart_height = height - padding_top - padding_bottom
     dates = [row["date"] for row in rows]
-    max_value = max(float(row.get(field, 0) or 0) for row in rows for _, field, _ in series)
+    max_value = max(
+        (float(row.get(field, 0) or 0) for row in rows for _, field, _ in series),
+        default=0.0,
+    )
     max_value = max(1.0, max_value)
     y_top = nice_ceiling(max_value)
 
