@@ -158,7 +158,7 @@
       color: #f9fbf8;
       display: grid;
       gap: 18px;
-      grid-template-columns: minmax(0, 0.72fr) minmax(420px, 1fr);
+      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
       padding: 18px;
     }
     .intro-panel .eyebrow { color: #8de1b5; }
@@ -254,7 +254,7 @@
       align-items: start;
       display: grid;
       gap: 12px;
-      grid-template-columns: minmax(0, 1.42fr) minmax(320px, 0.82fr);
+      grid-template-columns: minmax(0, 1.42fr) minmax(0, 0.82fr);
     }
     .chart-grid {
       display: grid;
@@ -273,7 +273,7 @@
     .chart svg {
       display: block;
       height: auto;
-      min-width: 560px;
+      max-width: 100%;
       width: 100%;
     }
     .legend {
@@ -303,7 +303,6 @@
     table {
       border-collapse: collapse;
       font-size: 0.82rem;
-      min-width: 420px;
       width: 100%;
     }
     caption {
@@ -333,14 +332,180 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .bar-cell {
-      min-width: 90px;
-      width: 24%;
+      min-width: 56px;
+      width: 18%;
     }
     .bar {
       background: linear-gradient(90deg, #6eb6ff, #8de1b5);
       border-radius: 999px;
       display: block;
       height: 7px;
+    }
+    .bucket-tabs {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      position: relative;
+    }
+    .bucket-tabs > .bucket-radio {
+      height: 1px;
+      margin: -1px;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+      position: absolute;
+      width: 1px;
+    }
+    .bucket-tab-strip {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.74rem;
+      gap: 6px;
+      letter-spacing: 0;
+    }
+    .bucket-tab-strip::before {
+      content: "Granularity:";
+      font-weight: 700;
+      letter-spacing: 0;
+      margin-right: 4px;
+      text-transform: uppercase;
+    }
+    .bucket-tab-label {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #dcebe4;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      padding: 5px 13px;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+      user-select: none;
+    }
+    .bucket-tab-label:hover {
+      border-color: var(--line-strong);
+      color: var(--green);
+    }
+    .bucket-tabs > .bucket-radio:focus-visible + .bucket-tab-strip > .bucket-tab-label,
+    .bucket-tabs > .bucket-radio:focus-visible ~ .bucket-tab-strip > .bucket-tab-label {
+      outline: 2px solid transparent;
+    }
+    .bucket-tabs:has(> .bucket-radio[id$="-day"]:checked) .bucket-tab-strip > label[data-bucket="day"],
+    .bucket-tabs:has(> .bucket-radio[id$="-week"]:checked) .bucket-tab-strip > label[data-bucket="week"],
+    .bucket-tabs:has(> .bucket-radio[id$="-month"]:checked) .bucket-tab-strip > label[data-bucket="month"] {
+      background: var(--green);
+      border-color: var(--green);
+      color: #0d1714;
+    }
+    .bucket-tabs > .bucket-panel { display: none; min-width: 0; }
+    .bucket-tabs > .bucket-radio[id$="-day"]:checked ~ .bucket-panel[data-bucket="day"],
+    .bucket-tabs > .bucket-radio[id$="-week"]:checked ~ .bucket-panel[data-bucket="week"],
+    .bucket-tabs > .bucket-radio[id$="-month"]:checked ~ .bucket-panel[data-bucket="month"] {
+      display: block;
+    }
+    .release-subsections {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .release-subsection {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .release-subsection h3 {
+      margin: 0 0 4px;
+    }
+    .release-subsection .note {
+      margin: 0 0 12px;
+    }
+    .release-subsection .content-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .hbar-chart {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      padding: 12px;
+    }
+    .hbar-chart .chart-title {
+      color: #d9e8e0;
+      font-size: 0.82rem;
+      font-weight: 750;
+      letter-spacing: 0;
+      margin: 0 0 4px;
+    }
+    .hbar-row {
+      align-items: center;
+      column-gap: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.6fr) auto auto;
+      min-width: 0;
+      row-gap: 0;
+    }
+    .hbar-label {
+      color: #dcebe4;
+      font-size: 0.82rem;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .hbar-label a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .hbar-label a:hover {
+      color: var(--green);
+      text-decoration: underline;
+    }
+    .hbar-track {
+      background: rgba(125, 183, 255, 0.12);
+      border-radius: 999px;
+      height: 8px;
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .hbar-fill {
+      border-radius: 999px;
+      display: block;
+      height: 100%;
+    }
+    .hbar-value {
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      text-align: right;
+    }
+    .hbar-secondary {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    @media (max-width: 720px) {
+      .hbar-row {
+        grid-template-columns: minmax(0, 1.2fr) auto;
+        row-gap: 4px;
+      }
+      .hbar-track {
+        grid-column: 1 / -1;
+      }
+      .hbar-value {
+        grid-column: auto;
+      }
+      .hbar-secondary {
+        grid-column: auto;
+      }
     }
     footer {
       color: var(--muted);
@@ -352,7 +517,8 @@
       .intro-panel,
       .content-grid,
       .chart-grid,
-      .split {
+      .split,
+      .release-subsection .content-grid {
         grid-template-columns: 1fr;
       }
       .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -371,7 +537,6 @@
       .overview { grid-template-columns: 1fr; }
       h1 { font-size: 1.22rem; }
       .intro-panel h2 { font-size: 1.42rem; }
-      .chart svg { min-width: 520px; }
     }
   </style>
 </head>
@@ -385,8 +550,8 @@
       </div>
     </div>
     <div class="run-meta">
-      <span>2026-04-29T04:27:57Z UTC</span>
-      <span>5 snapshot(s)</span>
+      <span>2026-04-29T17:32:31Z UTC</span>
+      <span>6 snapshot(s)</span>
     </div>
   </header>
   <nav class="section-nav" aria-label="Report sections">
@@ -516,8 +681,8 @@
       .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     </style>
     <text x="56" y="13" class="label">Repository counters over time</text>
-    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">25</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">50</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">75</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">100</text><text x="56.0" y="248" text-anchor="middle" class="label">04-27</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text><text x="862.0" y="248" text-anchor="middle" class="label">04-29</text>
-    <path d="M 56.0 108.0 L 257.5 108.0 L 459.0 108.0 L 660.5 108.0 L 862.0 108.0" fill="none" stroke="#67e8f9" stroke-width="2.4"><title>Stargazers</title></path><path d="M 56.0 164.0 L 257.5 164.0 L 459.0 164.0 L 660.5 164.0 L 862.0 164.0" fill="none" stroke="#fb7185" stroke-width="2.4"><title>Forks</title></path><path d="M 56.0 182.0 L 257.5 182.0 L 459.0 182.0 L 660.5 182.0 L 862.0 182.0" fill="none" stroke="#81e2b2" stroke-width="2.4"><title>Subscribers</title></path><path d="M 56.0 218.0 L 257.5 218.0 L 459.0 218.0 L 660.5 218.0 L 862.0 218.0" fill="none" stroke="#f4c76d" stroke-width="2.4"><title>Open issues</title></path>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">25</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">50</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">75</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">100</text><text x="56.0" y="248" text-anchor="middle" class="label">04-27</text><text x="539.6" y="248" text-anchor="middle" class="label">04-28</text><text x="862.0" y="248" text-anchor="middle" class="label">04-29</text>
+    <path d="M 56.0 108.0 L 217.2 108.0 L 378.4 108.0 L 539.6 108.0 L 700.8 108.0 L 862.0 108.0" fill="none" stroke="#67e8f9" stroke-width="2.4"><title>Stargazers</title></path><path d="M 56.0 164.0 L 217.2 164.0 L 378.4 164.0 L 539.6 164.0 L 700.8 164.0 L 862.0 164.0" fill="none" stroke="#fb7185" stroke-width="2.4"><title>Forks</title></path><path d="M 56.0 182.0 L 217.2 182.0 L 378.4 182.0 L 539.6 182.0 L 700.8 182.0 L 862.0 182.0" fill="none" stroke="#81e2b2" stroke-width="2.4"><title>Subscribers</title></path><path d="M 56.0 218.0 L 217.2 218.0 L 378.4 218.0 L 539.6 218.0 L 700.8 218.0 L 862.0 218.0" fill="none" stroke="#f4c76d" stroke-width="2.4"><title>Open issues</title></path>
   </svg>
   <div class="legend"><span><i style="background:#67e8f9"></i>Stargazers</span><span><i style="background:#fb7185"></i>Forks</span><span><i style="background:#81e2b2"></i>Subscribers</span><span><i style="background:#f4c76d"></i>Open issues</span></div>
 </div>
@@ -528,26 +693,57 @@
       <div class="section-heading">
         <p class="eyebrow">Delivery</p>
         <h2>Release asset downloads</h2>
-        <p class="note">GitHub exposes download counts for uploaded release assets. Generated source ZIP and TAR archives do not expose download counters.</p>
+        <p class="note">GitHub exposes download counts for uploaded release assets. Generated source ZIP and TAR archives do not expose download counters. Each asset is also grouped into a release (collection by tag) and an asset family (collection by canonical name).</p>
       </div>
-      <div class="metrics"><div class="metric"><span>Tracked assets</span><strong>0</strong><small>uploaded assets</small></div><div class="metric"><span>Total downloads</span><strong>0</strong><small>latest cumulative count</small></div><div class="metric"><span>Observed this month</span><strong>0</strong><small>delta between snapshots</small></div></div>
+      <div class="metrics"><div class="metric"><span>Tracked assets</span><strong>0</strong><small>uploaded assets</small></div><div class="metric"><span>Releases</span><strong>0</strong><small>tags with assets</small></div><div class="metric"><span>Asset families</span><strong>0</strong><small>canonical names</small></div><div class="metric"><span>Total downloads</span><strong>0</strong><small>latest cumulative count</small></div><div class="metric"><span>Today</span><strong>0</strong><small>latest day-over-day delta</small></div><div class="metric"><span>This week</span><strong>0</strong><small>delta across all assets</small></div><div class="metric"><span>This month</span><strong>0</strong><small>delta across all assets</small></div></div>
+      <div class="bucket-tabs"><input type="radio" name="bt-release-total-deltas" id="bt-release-total-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-release-total-deltas" id="bt-release-total-deltas-week" class="bucket-radio" /><input type="radio" name="bt-release-total-deltas" id="bt-release-total-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-release-total-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-release-total-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-release-total-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><p class="note">No data available for downloads per day (delta between snapshots).</p></div><div class="bucket-panel" data-bucket="week"><p class="note">No data available for downloads per week (delta between snapshots).</p></div><div class="bucket-panel" data-bucket="month"><p class="note">No data available for downloads per month (delta between snapshots).</p></div></div>
       <div class="content-grid">
-        <div class="chart" role="img" aria-label="Tracked release asset downloads over time">
+        <div class="chart" role="img" aria-label="Tracked release asset downloads over time (cumulative)">
   <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
     <style>
       .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
       .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
       .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     </style>
-    <text x="56" y="13" class="label">Tracked release asset downloads over time</text>
-    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">0.2</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">0.5</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">0.8</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">1</text><text x="56.0" y="248" text-anchor="middle" class="label">04-27</text><text x="459.0" y="248" text-anchor="middle" class="label">04-27</text><text x="862.0" y="248" text-anchor="middle" class="label">04-29</text>
-    <path d="M 56.0 218.0 L 257.5 218.0 L 459.0 218.0 L 660.5 218.0 L 862.0 218.0" fill="none" stroke="#7db7ff" stroke-width="2.4"><title>Downloads</title></path>
+    <text x="56" y="13" class="label">Tracked release asset downloads over time (cumulative)</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="862" y2="218" class="axis" /><line x1="56" y1="168.0" x2="862" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">0.2</text><line x1="56" y1="118.0" x2="862" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">0.5</text><line x1="56" y1="68.0" x2="862" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">0.8</text><line x1="56" y1="18.0" x2="862" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">1</text><text x="56.0" y="248" text-anchor="middle" class="label">04-27</text><text x="539.6" y="248" text-anchor="middle" class="label">04-28</text><text x="862.0" y="248" text-anchor="middle" class="label">04-29</text>
+    <path d="M 56.0 218.0 L 217.2 218.0 L 378.4 218.0 L 539.6 218.0 L 700.8 218.0 L 862.0 218.0" fill="none" stroke="#7db7ff" stroke-width="2.4"><title>Cumulative</title></path>
   </svg>
-  <div class="legend"><span><i style="background:#7db7ff"></i>Downloads</span></div>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Cumulative</span></div>
 </div>
-        <div class="table-panel"><p class="note">No top release assets.</p></div>
+        <div class="table-panel"><p class="note">No monthly observed release asset downloads yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
       </div>
-      <div class="table-panel wide-table"><p class="note">No monthly observed release asset downloads yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+      <div class="release-subsections">
+        <div class="release-subsection" id="releases-by-asset">
+          <h3>By individual asset</h3>
+          <p class="note">Top 0 of 0 tracked assets, ranked by total downloads. The chart on the left shows download deltas between snapshots (use the granularity toggle to switch between daily, weekly and monthly buckets); the bars on the right rank assets by their lifetime total.</p>
+          <div class="content-grid">
+            <div class="bucket-tabs"><input type="radio" name="bt-releases-by-asset-deltas" id="bt-releases-by-asset-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-releases-by-asset-deltas" id="bt-releases-by-asset-deltas-week" class="bucket-radio" /><input type="radio" name="bt-releases-by-asset-deltas" id="bt-releases-by-asset-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-releases-by-asset-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-releases-by-asset-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-releases-by-asset-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><p class="note">No data available for top assets daily downloads (delta).</p></div><div class="bucket-panel" data-bucket="week"><p class="note">No data available for top assets weekly downloads (delta).</p></div><div class="bucket-panel" data-bucket="month"><p class="note">No data available for top assets monthly downloads (delta).</p></div></div>
+            <p class="note">No data available for top assets by downloads.</p>
+          </div>
+          <div class="table-panel wide-table"><p class="note">No top assets.</p></div>
+        </div>
+        <div class="release-subsection" id="releases-by-release">
+          <h3>By release (collection of assets per tag)</h3>
+          <p class="note">0 release tag(s) carry uploaded assets. Cumulative downloads roll up every asset attached to a tag. The bar chart shows download deltas per tag at the selected granularity.</p>
+          <div class="content-grid">
+            <div class="bucket-tabs"><input type="radio" name="bt-releases-by-release-deltas" id="bt-releases-by-release-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-releases-by-release-deltas" id="bt-releases-by-release-deltas-week" class="bucket-radio" /><input type="radio" name="bt-releases-by-release-deltas" id="bt-releases-by-release-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-releases-by-release-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-releases-by-release-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-releases-by-release-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><p class="note">No data available for top releases daily downloads (delta).</p></div><div class="bucket-panel" data-bucket="week"><p class="note">No data available for top releases weekly downloads (delta).</p></div><div class="bucket-panel" data-bucket="month"><p class="note">No data available for top releases monthly downloads (delta).</p></div></div>
+            <p class="note">No data available for top releases by downloads.</p>
+          </div>
+          <div class="table-panel wide-table"><p class="note">No releases ranked by total downloads.</p></div>
+          <div class="table-panel wide-table"><p class="note">No monthly observed downloads by release yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+        </div>
+        <div class="release-subsection" id="releases-by-family">
+          <h3>By asset family (collection of versions per canonical name)</h3>
+          <p class="note">Family keys are derived by stripping version segments from each asset name. They group the same artifact across releases, e.g. <code>remix-1.4.2-release.zip</code> &rarr; <code>remix-release.zip</code>. The bar chart shows download deltas summed across every version that belongs to each family, at the selected granularity.</p>
+          <div class="content-grid">
+            <div class="bucket-tabs"><input type="radio" name="bt-releases-by-family-deltas" id="bt-releases-by-family-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-releases-by-family-deltas" id="bt-releases-by-family-deltas-week" class="bucket-radio" /><input type="radio" name="bt-releases-by-family-deltas" id="bt-releases-by-family-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-releases-by-family-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-releases-by-family-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-releases-by-family-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><p class="note">No data available for asset families daily downloads (delta).</p></div><div class="bucket-panel" data-bucket="week"><p class="note">No data available for asset families weekly downloads (delta).</p></div><div class="bucket-panel" data-bucket="month"><p class="note">No data available for asset families monthly downloads (delta).</p></div></div>
+            <p class="note">No data available for top asset families by downloads.</p>
+          </div>
+          <div class="table-panel wide-table"><p class="note">No asset families ranked by total downloads.</p></div>
+          <div class="table-panel wide-table"><p class="note">No monthly observed downloads by asset family yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+        </div>
+      </div>
     </section>
     <section id="popular" class="report-section">
       <div class="section-heading">
