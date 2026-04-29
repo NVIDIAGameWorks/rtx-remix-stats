@@ -1765,7 +1765,7 @@ REPORT_CSS = """    :root {
       color: #f9fbf8;
       display: grid;
       gap: 18px;
-      grid-template-columns: minmax(0, 0.72fr) minmax(420px, 1fr);
+      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
       padding: 18px;
     }
     .intro-panel .eyebrow { color: #8de1b5; }
@@ -1861,7 +1861,7 @@ REPORT_CSS = """    :root {
       align-items: start;
       display: grid;
       gap: 12px;
-      grid-template-columns: minmax(0, 1.42fr) minmax(320px, 0.82fr);
+      grid-template-columns: minmax(0, 1.42fr) minmax(0, 0.82fr);
     }
     .chart-grid {
       display: grid;
@@ -1880,7 +1880,7 @@ REPORT_CSS = """    :root {
     .chart svg {
       display: block;
       height: auto;
-      min-width: 560px;
+      max-width: 100%;
       width: 100%;
     }
     .legend {
@@ -1910,7 +1910,6 @@ REPORT_CSS = """    :root {
     table {
       border-collapse: collapse;
       font-size: 0.82rem;
-      min-width: 420px;
       width: 100%;
     }
     caption {
@@ -1940,8 +1939,8 @@ REPORT_CSS = """    :root {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .bar-cell {
-      min-width: 90px;
-      width: 24%;
+      min-width: 56px;
+      width: 18%;
     }
     .bar {
       background: linear-gradient(90deg, #6eb6ff, #8de1b5);
@@ -1952,6 +1951,7 @@ REPORT_CSS = """    :root {
     .bucket-tabs {
       display: grid;
       gap: 10px;
+      min-width: 0;
       position: relative;
     }
     .bucket-tabs > .bucket-radio {
@@ -2007,7 +2007,7 @@ REPORT_CSS = """    :root {
       border-color: var(--green);
       color: #0d1714;
     }
-    .bucket-tabs > .bucket-panel { display: none; }
+    .bucket-tabs > .bucket-panel { display: none; min-width: 0; }
     .bucket-tabs > .bucket-radio[id$="-day"]:checked ~ .bucket-panel[data-bucket="day"],
     .bucket-tabs > .bucket-radio[id$="-week"]:checked ~ .bucket-panel[data-bucket="week"],
     .bucket-tabs > .bucket-radio[id$="-month"]:checked ~ .bucket-panel[data-bucket="month"] {
@@ -2031,7 +2031,7 @@ REPORT_CSS = """    :root {
       margin: 0 0 12px;
     }
     .release-subsection .content-grid {
-      grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
     .hbar-chart {
       background: #0f1814;
@@ -2144,7 +2144,6 @@ REPORT_CSS = """    :root {
       .overview { grid-template-columns: 1fr; }
       h1 { font-size: 1.22rem; }
       .intro-panel h2 { font-size: 1.42rem; }
-      .chart svg { min-width: 520px; }
     }"""
 
 
