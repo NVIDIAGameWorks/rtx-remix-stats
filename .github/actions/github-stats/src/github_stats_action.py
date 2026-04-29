@@ -1774,7 +1774,7 @@ REPORT_CSS = """    :root {
       text-underline-offset: 0.16em;
     }
     .topbar, .section-nav, .report-shell, footer {
-      max-width: 1240px;
+      max-width: min(96vw, 1600px);
       margin: 0 auto;
       padding-left: 22px;
       padding-right: 22px;
@@ -2683,14 +2683,16 @@ def render_stacked_bar_chart(
         else ""
     )
 
+    title_x = padding_left + chart_width / 2
     return f"""<div class="chart" role="img" aria-label="{attr(title)}">
   <svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
     <style>
       .axis {{ stroke: var(--chart-axis, #52685d); stroke-width: 1; }}
       .grid {{ stroke: var(--chart-grid, #22342d); stroke-width: 1; }}
       .label {{ fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
+      .chart-title {{ fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
     </style>
-    <text x="{padding_left}" y="13" class="label">{esc(title)}</text>
+    <text x="{title_x:.1f}" y="13" text-anchor="middle" class="chart-title">{esc(title)}</text>
     {y_axis_html}
     {''.join(parts)}
   </svg>
@@ -2834,14 +2836,16 @@ def render_line_chart(
         f'<span><i style="background:{attr(color)}"></i>{esc(label)}</span>'
         for label, _, color in series
     )
+    title_x = padding_left + chart_width / 2
     return f"""<div class="chart" role="img" aria-label="{attr(title)}">
   <svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
     <style>
       .axis {{ stroke: var(--chart-axis, #52685d); stroke-width: 1; }}
       .grid {{ stroke: var(--chart-grid, #22342d); stroke-width: 1; }}
       .label {{ fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
+      .chart-title {{ fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
     </style>
-    <text x="{padding_left}" y="13" class="label">{esc(title)}</text>
+    <text x="{title_x:.1f}" y="13" text-anchor="middle" class="chart-title">{esc(title)}</text>
     {''.join(grid_parts)}
     {''.join(path_parts)}
   </svg>
