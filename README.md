@@ -1,6 +1,6 @@
 # RTX Remix Stats
 
-Private GitHub repository for generated repository statistics reports.
+GitHub repository for generated repository statistics reports.
 
 The workflow in `.github/workflows/repository-stats.yml` collects stats for:
 
@@ -8,7 +8,7 @@ The workflow in `.github/workflows/repository-stats.yml` collects stats for:
 - `NVIDIAGameWorks/dxvk-remix`
 - `NVIDIAGameWorks/toolkit-remix`
 
-Reports stay private in this repository. Each workflow run commits the generated
+Each workflow run commits the generated
 HTML reports to the `github-repo-stats` branch under:
 
 ```text
@@ -67,5 +67,3 @@ To view a report:
 - Download the matching `stats-*` artifact.
 - Open `report.html` locally.
 
-The historical snapshots and latest reports are also available on the private
-`github-repo-stats` branch for anyone with repository read access.
