@@ -2769,7 +2769,7 @@ def render_line_chart(
         return f'<p class="note">No data available for {esc(title.lower())}.</p>'
 
     padding_left = 56
-    padding_right = 18
+    padding_right = 24
     padding_top = 18
     padding_bottom = 42
     chart_width = width - padding_left - padding_right
@@ -2811,26 +2811,43 @@ def render_line_chart(
             f'<text x="{x:.1f}" y="{height - 12}" text-anchor="middle" class="label">{esc(short_date(dates[index]))}</text>'
         )
 
+    point_radius = 3.0 if len(rows) <= 60 else 2.0 if len(rows) <= 180 else 0.0
+
     path_parts = []
     for label, field, color in series:
         points = [
-            (x_for(index), y_for(float(row.get(field, 0) or 0)))
+            (
+                x_for(index),
+                y_for(float(row.get(field, 0) or 0)),
+                row.get("date", ""),
+                float(row.get(field, 0) or 0),
+            )
             for index, row in enumerate(rows)
         ]
         if len(points) == 1:
-            x, y = points[0]
+            x, y, date, value = points[0]
             path_parts.append(
-                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{attr(color)}"><title>{esc(label)}</title></circle>'
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{attr(color)}">'
+                f'<title>{esc(label)} — {esc(short_date(date))}: {esc(format_axis(value))}</title>'
+                f'</circle>'
             )
         else:
             path = " ".join(
                 f"{'M' if index == 0 else 'L'} {x:.1f} {y:.1f}"
-                for index, (x, y) in enumerate(points)
+                for index, (x, y, _date, _value) in enumerate(points)
             )
             path_parts.append(
                 f'<path d="{path}" fill="none" stroke="{attr(color)}" stroke-width="2.4">'
                 f"<title>{esc(label)}</title></path>"
             )
+            if point_radius > 0:
+                for x, y, date, value in points:
+                    path_parts.append(
+                        f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{point_radius}" '
+                        f'fill="{attr(color)}" class="point">'
+                        f'<title>{esc(label)} — {esc(short_date(date))}: {esc(format_axis(value))}</title>'
+                        f'</circle>'
+                    )
 
     legend = "".join(
         f'<span><i style="background:{attr(color)}"></i>{esc(label)}</span>'
@@ -2844,6 +2861,7 @@ def render_line_chart(
       .grid {{ stroke: var(--chart-grid, #22342d); stroke-width: 1; }}
       .label {{ fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
       .chart-title {{ fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
+      .point {{ stroke: #0b1612; stroke-width: 1; }}
     </style>
     <text x="{title_x:.1f}" y="13" text-anchor="middle" class="chart-title">{esc(title)}</text>
     {''.join(grid_parts)}
