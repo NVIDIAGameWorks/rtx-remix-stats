@@ -10,12 +10,12 @@
     "clones": 15,
     "views": 15
   },
-  "generated_at": "2026-04-29T18:00:18Z",
+  "generated_at": "2026-04-30T04:28:52Z",
   "monthly_release_asset_downloads": 0,
   "report_path": "NVIDIAGameWorks/dxvk-remix/latest-report/report.html",
   "report_url": "",
   "repository": "NVIDIAGameWorks/dxvk-remix",
-  "snapshot_count": 8,
+  "snapshot_count": 9,
   "totals": {
     "clones": 807,
     "forks": 98,
