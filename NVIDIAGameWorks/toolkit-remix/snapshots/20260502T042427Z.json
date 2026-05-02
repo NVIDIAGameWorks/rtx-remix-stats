@@ -1,0 +1,815 @@
+{
+  "aggregate_counts": {
+    "forks": 27,
+    "open_issues": 0,
+    "stargazers": 56,
+    "subscribers": 18,
+    "watchers": 56
+  },
+  "api_base_url": "https://api.github.com",
+  "forks": [
+    {
+      "created_at": "2024-08-08T13:35:27Z",
+      "full_name": "nvzkupu/toolkit-remix-test",
+      "html_url": "https://github.com/nvzkupu/toolkit-remix-test",
+      "id": 839866175,
+      "owner_login": "nvzkupu"
+    },
+    {
+      "created_at": "2024-08-09T19:51:07Z",
+      "full_name": "Night10999/toolkit-remix",
+      "html_url": "https://github.com/Night10999/toolkit-remix",
+      "id": 840476476,
+      "owner_login": "Night10999"
+    },
+    {
+      "created_at": "2024-08-14T21:14:26Z",
+      "full_name": "AKankrov/toolkit-remix",
+      "html_url": "https://github.com/AKankrov/toolkit-remix",
+      "id": 842683845,
+      "owner_login": "AKankrov"
+    },
+    {
+      "created_at": "2024-08-21T06:29:39Z",
+      "full_name": "sekkit/toolkit-remix",
+      "html_url": "https://github.com/sekkit/toolkit-remix",
+      "id": 845383862,
+      "owner_login": "sekkit"
+    },
+    {
+      "created_at": "2024-10-04T05:12:19Z",
+      "full_name": "gordongrace/toolkit-remix",
+      "html_url": "https://github.com/gordongrace/toolkit-remix",
+      "id": 867452764,
+      "owner_login": "gordongrace"
+    },
+    {
+      "created_at": "2024-10-07T00:15:56Z",
+      "full_name": "Kim2091/toolkit-remix",
+      "html_url": "https://github.com/Kim2091/toolkit-remix",
+      "id": 868663047,
+      "owner_login": "Kim2091"
+    },
+    {
+      "created_at": "2024-10-27T06:41:25Z",
+      "full_name": "rsp2308/toolkit-remix",
+      "html_url": "https://github.com/rsp2308/toolkit-remix",
+      "id": 879160626,
+      "owner_login": "rsp2308"
+    },
+    {
+      "created_at": "2025-01-22T02:36:24Z",
+      "full_name": "Kuonirad/toolkit-remix",
+      "html_url": "https://github.com/Kuonirad/toolkit-remix",
+      "id": 920362334,
+      "owner_login": "Kuonirad"
+    },
+    {
+      "created_at": "2025-03-17T23:11:05Z",
+      "full_name": "NVIDIAGameWorks/test-toolkit-remix",
+      "html_url": "https://github.com/NVIDIAGameWorks/test-toolkit-remix",
+      "id": 950279919,
+      "owner_login": "NVIDIAGameWorks"
+    },
+    {
+      "created_at": "2025-03-18T09:48:06Z",
+      "full_name": "gmh5225/toolkit-remix",
+      "html_url": "https://github.com/gmh5225/toolkit-remix",
+      "id": 950524084,
+      "owner_login": "gmh5225"
+    },
+    {
+      "created_at": "2025-04-27T03:14:14Z",
+      "full_name": "abanadz/toolkit-remix-NVIDIA-DZJSAMAL",
+      "html_url": "https://github.com/abanadz/toolkit-remix-NVIDIA-DZJSAMAL",
+      "id": 973459347,
+      "owner_login": "abanadz"
+    },
+    {
+      "created_at": "2025-06-21T11:09:21Z",
+      "full_name": "aintjohnny/toolkit-remix",
+      "html_url": "https://github.com/aintjohnny/toolkit-remix",
+      "id": 1006042437,
+      "owner_login": "aintjohnny"
+    },
+    {
+      "created_at": "2025-07-09T21:47:32Z",
+      "full_name": "Night1099/toolkit-remix",
+      "html_url": "https://github.com/Night1099/toolkit-remix",
+      "id": 1017002400,
+      "owner_login": "Night1099"
+    },
+    {
+      "created_at": "2025-07-13T05:54:35Z",
+      "full_name": "legion-96/toolkit-remix",
+      "html_url": "https://github.com/legion-96/toolkit-remix",
+      "id": 1018823701,
+      "owner_login": "legion-96"
+    },
+    {
+      "created_at": "2025-08-03T13:58:45Z",
+      "full_name": "r2d2Proton/toolkit-remix",
+      "html_url": "https://github.com/r2d2Proton/toolkit-remix",
+      "id": 1031323938,
+      "owner_login": "r2d2Proton"
+    },
+    {
+      "created_at": "2025-08-05T10:28:55Z",
+      "full_name": "CFausWhb/toolkit-remix",
+      "html_url": "https://github.com/CFausWhb/toolkit-remix",
+      "id": 1032454544,
+      "owner_login": "CFausWhb"
+    },
+    {
+      "created_at": "2025-08-09T22:18:39Z",
+      "full_name": "skurtyyskirts/skurtyytewlkit",
+      "html_url": "https://github.com/skurtyyskirts/skurtyytewlkit",
+      "id": 1035209244,
+      "owner_login": "skurtyyskirts"
+    },
+    {
+      "created_at": "2025-08-25T07:00:44Z",
+      "full_name": "Simon-Lajoie/toolkit-remix",
+      "html_url": "https://github.com/Simon-Lajoie/toolkit-remix",
+      "id": 1044087522,
+      "owner_login": "Simon-Lajoie"
+    },
+    {
+      "created_at": "2025-10-14T02:25:49Z",
+      "full_name": "xxdolcexx/toolkit-remix",
+      "html_url": "https://github.com/xxdolcexx/toolkit-remix",
+      "id": 1075800253,
+      "owner_login": "xxdolcexx"
+    },
+    {
+      "created_at": "2025-11-04T00:14:57Z",
+      "full_name": "MDDBULLDOGG/toolkit-remix-bulldogg-fork",
+      "html_url": "https://github.com/MDDBULLDOGG/toolkit-remix-bulldogg-fork",
+      "id": 1089144623,
+      "owner_login": "MDDBULLDOGG"
+    },
+    {
+      "created_at": "2025-12-15T19:45:11Z",
+      "full_name": "Jridder1987/toolkit-remix",
+      "html_url": "https://github.com/Jridder1987/toolkit-remix",
+      "id": 1117073677,
+      "owner_login": "Jridder1987"
+    },
+    {
+      "created_at": "2026-01-10T12:11:44Z",
+      "full_name": "UGVI/toolkit-remix",
+      "html_url": "https://github.com/UGVI/toolkit-remix",
+      "id": 1131638954,
+      "owner_login": "UGVI"
+    },
+    {
+      "created_at": "2026-02-02T09:01:03Z",
+      "full_name": "JustinParadise22/toolkit-remix",
+      "html_url": "https://github.com/JustinParadise22/toolkit-remix",
+      "id": 1147830138,
+      "owner_login": "JustinParadise22"
+    },
+    {
+      "created_at": "2026-02-27T01:05:26Z",
+      "full_name": "Kralich/toolkit-remix",
+      "html_url": "https://github.com/Kralich/toolkit-remix",
+      "id": 1168059037,
+      "owner_login": "Kralich"
+    },
+    {
+      "created_at": "2026-03-12T08:21:59Z",
+      "full_name": "less74812-svg/toolkit-remix",
+      "html_url": "https://github.com/less74812-svg/toolkit-remix",
+      "id": 1179638802,
+      "owner_login": "less74812-svg"
+    },
+    {
+      "created_at": "2026-04-01T17:23:31Z",
+      "full_name": "DavidST44/toolkit-remix",
+      "html_url": "https://github.com/DavidST44/toolkit-remix",
+      "id": 1198709582,
+      "owner_login": "DavidST44"
+    },
+    {
+      "created_at": "2026-04-06T21:37:36Z",
+      "full_name": "jatinot/toolkit-remix",
+      "html_url": "https://github.com/jatinot/toolkit-remix",
+      "id": 1203246695,
+      "owner_login": "jatinot"
+    }
+  ],
+  "generated_at": "2026-05-02T04:24:27Z",
+  "releases": [],
+  "repository": "NVIDIAGameWorks/toolkit-remix",
+  "repository_metadata": {
+    "created_at": "2024-07-02T06:42:12Z",
+    "default_branch": "main",
+    "description": "RTX Remix Toolkit",
+    "fork": false,
+    "forks_count": 27,
+    "full_name": "NVIDIAGameWorks/toolkit-remix",
+    "html_url": "https://github.com/NVIDIAGameWorks/toolkit-remix",
+    "id": 822953824,
+    "name": "toolkit-remix",
+    "open_issues_count": 0,
+    "private": false,
+    "pushed_at": "2026-05-01T22:45:12Z",
+    "stargazers_count": 56,
+    "subscribers_count": 18,
+    "updated_at": "2026-05-01T22:45:16Z",
+    "visibility": "public",
+    "watchers_count": 56
+  },
+  "schema_version": 1,
+  "stargazers": [
+    {
+      "html_url": "https://github.com/verosment",
+      "id": 64132923,
+      "login": "verosment",
+      "starred_at": "2024-08-08T13:30:42Z"
+    },
+    {
+      "html_url": "https://github.com/Ekozmaster",
+      "id": 16577852,
+      "login": "Ekozmaster",
+      "starred_at": "2024-08-08T16:50:25Z"
+    },
+    {
+      "html_url": "https://github.com/Lrs121",
+      "id": 3093776,
+      "login": "Lrs121",
+      "starred_at": "2024-08-08T18:09:26Z"
+    },
+    {
+      "html_url": "https://github.com/nxkb",
+      "id": 14878394,
+      "login": "nxkb",
+      "starred_at": "2024-08-08T19:03:42Z"
+    },
+    {
+      "html_url": "https://github.com/ShizCalev",
+      "id": 6209658,
+      "login": "ShizCalev",
+      "starred_at": "2024-08-09T03:14:23Z"
+    },
+    {
+      "html_url": "https://github.com/l0wBoB",
+      "id": 7037623,
+      "login": "l0wBoB",
+      "starred_at": "2024-08-09T10:04:19Z"
+    },
+    {
+      "html_url": "https://github.com/adrianopteodoro",
+      "id": 811331,
+      "login": "adrianopteodoro",
+      "starred_at": "2024-08-09T18:25:04Z"
+    },
+    {
+      "html_url": "https://github.com/Nikronic",
+      "id": 32401852,
+      "login": "Nikronic",
+      "starred_at": "2024-08-09T19:14:33Z"
+    },
+    {
+      "html_url": "https://github.com/xoxor4d",
+      "id": 45299104,
+      "login": "xoxor4d",
+      "starred_at": "2024-08-10T04:44:12Z"
+    },
+    {
+      "html_url": "https://github.com/momo5502",
+      "id": 4027748,
+      "login": "momo5502",
+      "starred_at": "2024-08-10T17:49:04Z"
+    },
+    {
+      "html_url": "https://github.com/sean-who",
+      "id": 108753096,
+      "login": "sean-who",
+      "starred_at": "2024-08-10T20:29:11Z"
+    },
+    {
+      "html_url": "https://github.com/Donut225800",
+      "id": 163379243,
+      "login": "Donut225800",
+      "starred_at": "2024-08-11T20:39:26Z"
+    },
+    {
+      "html_url": "https://github.com/MzaGuille",
+      "id": 151482698,
+      "login": "MzaGuille",
+      "starred_at": "2024-08-12T05:34:54Z"
+    },
+    {
+      "html_url": "https://github.com/Moses-Alero",
+      "id": 75664025,
+      "login": "Moses-Alero",
+      "starred_at": "2024-08-13T09:01:19Z"
+    },
+    {
+      "html_url": "https://github.com/keitarogg",
+      "id": 98975277,
+      "login": "keitarogg",
+      "starred_at": "2024-08-14T21:07:09Z"
+    },
+    {
+      "html_url": "https://github.com/G-4-F",
+      "id": 78043905,
+      "login": "G-4-F",
+      "starred_at": "2024-08-21T00:24:02Z"
+    },
+    {
+      "html_url": "https://github.com/sekkit",
+      "id": 25851211,
+      "login": "sekkit",
+      "starred_at": "2024-08-21T06:28:48Z"
+    },
+    {
+      "html_url": "https://github.com/melt122",
+      "id": 122342226,
+      "login": "melt122",
+      "starred_at": "2024-08-21T16:18:58Z"
+    },
+    {
+      "html_url": "https://github.com/Trass3r",
+      "id": 404623,
+      "login": "Trass3r",
+      "starred_at": "2024-09-14T14:38:48Z"
+    },
+    {
+      "html_url": "https://github.com/ignite720",
+      "id": 132559332,
+      "login": "ignite720",
+      "starred_at": "2024-09-27T05:17:08Z"
+    },
+    {
+      "html_url": "https://github.com/skurtyyskirts",
+      "id": 148610406,
+      "login": "skurtyyskirts",
+      "starred_at": "2024-10-02T23:55:25Z"
+    },
+    {
+      "html_url": "https://github.com/mgedzius",
+      "id": 3487807,
+      "login": "mgedzius",
+      "starred_at": "2024-10-04T06:55:44Z"
+    },
+    {
+      "html_url": "https://github.com/sambvfx",
+      "id": 5867029,
+      "login": "sambvfx",
+      "starred_at": "2024-10-16T22:42:34Z"
+    },
+    {
+      "html_url": "https://github.com/gatspy",
+      "id": 804446,
+      "login": "gatspy",
+      "starred_at": "2024-10-17T17:07:02Z"
+    },
+    {
+      "html_url": "https://github.com/noreem",
+      "id": 621350,
+      "login": "noreem",
+      "starred_at": "2024-11-13T14:51:23Z"
+    },
+    {
+      "html_url": "https://github.com/nicolascluz",
+      "id": 4480061,
+      "login": "nicolascluz",
+      "starred_at": "2024-12-06T15:01:55Z"
+    },
+    {
+      "html_url": "https://github.com/sion3951",
+      "id": 105815623,
+      "login": "sion3951",
+      "starred_at": "2024-12-07T06:42:18Z"
+    },
+    {
+      "html_url": "https://github.com/TheCrAge100",
+      "id": 132576123,
+      "login": "TheCrAge100",
+      "starred_at": "2025-01-17T05:07:15Z"
+    },
+    {
+      "html_url": "https://github.com/PavvelProDev",
+      "id": 91415512,
+      "login": "PavvelProDev",
+      "starred_at": "2025-03-19T21:30:21Z"
+    },
+    {
+      "html_url": "https://github.com/C0l1nuX",
+      "id": 133383820,
+      "login": "C0l1nuX",
+      "starred_at": "2025-03-20T22:52:06Z"
+    },
+    {
+      "html_url": "https://github.com/Surfndez",
+      "id": 11703698,
+      "login": "Surfndez",
+      "starred_at": "2025-03-26T23:03:25Z"
+    },
+    {
+      "html_url": "https://github.com/that-corych",
+      "id": 56929051,
+      "login": "that-corych",
+      "starred_at": "2025-03-31T19:49:52Z"
+    },
+    {
+      "html_url": "https://github.com/kmorrow1",
+      "id": 71241090,
+      "login": "kmorrow1",
+      "starred_at": "2025-04-04T02:09:54Z"
+    },
+    {
+      "html_url": "https://github.com/abanadz",
+      "id": 75025617,
+      "login": "abanadz",
+      "starred_at": "2025-04-27T03:14:02Z"
+    },
+    {
+      "html_url": "https://github.com/UNREALryan",
+      "id": 107084921,
+      "login": "UNREALryan",
+      "starred_at": "2025-05-04T04:00:08Z"
+    },
+    {
+      "html_url": "https://github.com/HardwayLinka",
+      "id": 45873697,
+      "login": "HardwayLinka",
+      "starred_at": "2025-06-05T01:43:16Z"
+    },
+    {
+      "html_url": "https://github.com/Neogene",
+      "id": 2322707,
+      "login": "Neogene",
+      "starred_at": "2025-06-15T16:08:30Z"
+    },
+    {
+      "html_url": "https://github.com/CalicoApricot",
+      "id": 15978297,
+      "login": "CalicoApricot",
+      "starred_at": "2025-06-17T06:31:47Z"
+    },
+    {
+      "html_url": "https://github.com/AntonioModer",
+      "id": 3039538,
+      "login": "AntonioModer",
+      "starred_at": "2025-07-08T17:26:04Z"
+    },
+    {
+      "html_url": "https://github.com/davidldennison",
+      "id": 67825086,
+      "login": "davidldennison",
+      "starred_at": "2025-07-25T02:49:34Z"
+    },
+    {
+      "html_url": "https://github.com/r2d2Proton",
+      "id": 4054178,
+      "login": "r2d2Proton",
+      "starred_at": "2025-08-03T13:58:38Z"
+    },
+    {
+      "html_url": "https://github.com/ssoj13",
+      "id": 96214515,
+      "login": "ssoj13",
+      "starred_at": "2025-08-13T21:21:15Z"
+    },
+    {
+      "html_url": "https://github.com/xxRedPepperxx",
+      "id": 114611587,
+      "login": "xxRedPepperxx",
+      "starred_at": "2025-08-17T23:39:07Z"
+    },
+    {
+      "html_url": "https://github.com/DavidST44",
+      "id": 10670124,
+      "login": "DavidST44",
+      "starred_at": "2025-09-01T10:35:43Z"
+    },
+    {
+      "html_url": "https://github.com/lanxinger",
+      "id": 20549552,
+      "login": "lanxinger",
+      "starred_at": "2025-09-05T11:44:39Z"
+    },
+    {
+      "html_url": "https://github.com/twindragon6",
+      "id": 37599898,
+      "login": "twindragon6",
+      "starred_at": "2025-09-09T17:34:59Z"
+    },
+    {
+      "html_url": "https://github.com/bullshit",
+      "id": 197578,
+      "login": "bullshit",
+      "starred_at": "2025-10-13T18:45:02Z"
+    },
+    {
+      "html_url": "https://github.com/NaiveInvestigator",
+      "id": 72654596,
+      "login": "NaiveInvestigator",
+      "starred_at": "2025-10-22T18:24:38Z"
+    },
+    {
+      "html_url": "https://github.com/SamuelClex",
+      "id": 96948875,
+      "login": "SamuelClex",
+      "starred_at": "2025-12-06T18:43:40Z"
+    },
+    {
+      "html_url": "https://github.com/Disquse",
+      "id": 10367215,
+      "login": "Disquse",
+      "starred_at": "2025-12-11T18:50:37Z"
+    },
+    {
+      "html_url": "https://github.com/UGVI",
+      "id": 17247479,
+      "login": "UGVI",
+      "starred_at": "2026-01-10T12:11:42Z"
+    },
+    {
+      "html_url": "https://github.com/glurhack",
+      "id": 12669587,
+      "login": "glurhack",
+      "starred_at": "2026-01-24T23:20:49Z"
+    },
+    {
+      "html_url": "https://github.com/Ammar-Sadaoui",
+      "id": 179120496,
+      "login": "Ammar-Sadaoui",
+      "starred_at": "2026-01-29T13:18:45Z"
+    },
+    {
+      "html_url": "https://github.com/olivierbriraud",
+      "id": 96887984,
+      "login": "olivierbriraud",
+      "starred_at": "2026-03-06T01:33:39Z"
+    },
+    {
+      "html_url": "https://github.com/Psyclone88",
+      "id": 179480719,
+      "login": "Psyclone88",
+      "starred_at": "2026-04-16T09:25:07Z"
+    },
+    {
+      "html_url": "https://github.com/MasterOfTheMojave",
+      "id": 33037492,
+      "login": "MasterOfTheMojave",
+      "starred_at": "2026-05-01T05:23:44Z"
+    }
+  ],
+  "traffic": {
+    "clones": {
+      "clones": [
+        {
+          "count": 2,
+          "timestamp": "2026-04-17T00:00:00Z",
+          "uniques": 2
+        },
+        {
+          "count": 4,
+          "timestamp": "2026-04-18T00:00:00Z",
+          "uniques": 4
+        },
+        {
+          "count": 5,
+          "timestamp": "2026-04-19T00:00:00Z",
+          "uniques": 4
+        },
+        {
+          "count": 37,
+          "timestamp": "2026-04-20T00:00:00Z",
+          "uniques": 23
+        },
+        {
+          "count": 28,
+          "timestamp": "2026-04-21T00:00:00Z",
+          "uniques": 21
+        },
+        {
+          "count": 279,
+          "timestamp": "2026-04-22T00:00:00Z",
+          "uniques": 93
+        },
+        {
+          "count": 44,
+          "timestamp": "2026-04-23T00:00:00Z",
+          "uniques": 29
+        },
+        {
+          "count": 36,
+          "timestamp": "2026-04-24T00:00:00Z",
+          "uniques": 22
+        },
+        {
+          "count": 15,
+          "timestamp": "2026-04-25T00:00:00Z",
+          "uniques": 14
+        },
+        {
+          "count": 4,
+          "timestamp": "2026-04-26T00:00:00Z",
+          "uniques": 4
+        },
+        {
+          "count": 17,
+          "timestamp": "2026-04-27T00:00:00Z",
+          "uniques": 13
+        },
+        {
+          "count": 22,
+          "timestamp": "2026-04-28T00:00:00Z",
+          "uniques": 14
+        },
+        {
+          "count": 38,
+          "timestamp": "2026-04-29T00:00:00Z",
+          "uniques": 15
+        },
+        {
+          "count": 28,
+          "timestamp": "2026-04-30T00:00:00Z",
+          "uniques": 15
+        }
+      ],
+      "count": 559,
+      "uniques": 247
+    },
+    "popular_paths": [
+      {
+        "count": 164,
+        "path": "/NVIDIAGameWorks/toolkit-remix",
+        "title": "Overview",
+        "uniques": 106
+      },
+      {
+        "count": 29,
+        "path": "/NVIDIAGameWorks/toolkit-remix/tree/a60fa3835902fcd3964f441ca9875580321936ae",
+        "title": "/tree/a60fa3835902fcd3964f441ca9875580321936ae",
+        "uniques": 24
+      },
+      {
+        "count": 20,
+        "path": "/NVIDIAGameWorks/toolkit-remix/tags",
+        "title": "/tags",
+        "uniques": 10
+      },
+      {
+        "count": 17,
+        "path": "/NVIDIAGameWorks/toolkit-remix/actions",
+        "title": "/actions",
+        "uniques": 11
+      },
+      {
+        "count": 15,
+        "path": "/NVIDIAGameWorks/toolkit-remix/releases",
+        "title": "/releases",
+        "uniques": 9
+      },
+      {
+        "count": 13,
+        "path": "/NVIDIAGameWorks/toolkit-remix/releases/tag/1.4.2-1",
+        "title": "/releases/tag/1.4.2-1",
+        "uniques": 8
+      },
+      {
+        "count": 11,
+        "path": "/NVIDIAGameWorks/toolkit-remix/commit/892be1c4704110de3215175686f4f4fa3f166d4e",
+        "title": "/commit/892be1c4704110de3215175686f4f4fa3f166d4e",
+        "uniques": 7
+      },
+      {
+        "count": 11,
+        "path": "/NVIDIAGameWorks/toolkit-remix/commits/main",
+        "title": "/commits/main",
+        "uniques": 5
+      },
+      {
+        "count": 9,
+        "path": "/NVIDIAGameWorks/toolkit-remix/blob/main/docs_dev/README.md",
+        "title": "/blob/main/docs_dev/README.md",
+        "uniques": 8
+      },
+      {
+        "count": 8,
+        "path": "/NVIDIAGameWorks/toolkit-remix/actions/runs/25133188811/job/73664610147",
+        "title": "/actions/runs/25133188811/job/73664610147",
+        "uniques": 2
+      }
+    ],
+    "popular_referrers": [
+      {
+        "count": 141,
+        "referrer": "github.com",
+        "uniques": 73
+      },
+      {
+        "count": 50,
+        "referrer": "Google",
+        "uniques": 27
+      },
+      {
+        "count": 45,
+        "referrer": "docs.omniverse.nvidia.com",
+        "uniques": 21
+      },
+      {
+        "count": 6,
+        "referrer": "nvbugspro.nvidia.com",
+        "uniques": 1
+      },
+      {
+        "count": 2,
+        "referrer": "search.brave.com",
+        "uniques": 1
+      },
+      {
+        "count": 1,
+        "referrer": "Bing",
+        "uniques": 1
+      },
+      {
+        "count": 1,
+        "referrer": "statics.teams.cdn.office.net",
+        "uniques": 1
+      }
+    ],
+    "views": {
+      "count": 450,
+      "uniques": 152,
+      "views": [
+        {
+          "count": 41,
+          "timestamp": "2026-04-17T00:00:00Z",
+          "uniques": 13
+        },
+        {
+          "count": 59,
+          "timestamp": "2026-04-18T00:00:00Z",
+          "uniques": 9
+        },
+        {
+          "count": 33,
+          "timestamp": "2026-04-19T00:00:00Z",
+          "uniques": 15
+        },
+        {
+          "count": 36,
+          "timestamp": "2026-04-20T00:00:00Z",
+          "uniques": 8
+        },
+        {
+          "count": 28,
+          "timestamp": "2026-04-21T00:00:00Z",
+          "uniques": 14
+        },
+        {
+          "count": 25,
+          "timestamp": "2026-04-22T00:00:00Z",
+          "uniques": 15
+        },
+        {
+          "count": 26,
+          "timestamp": "2026-04-23T00:00:00Z",
+          "uniques": 13
+        },
+        {
+          "count": 13,
+          "timestamp": "2026-04-24T00:00:00Z",
+          "uniques": 8
+        },
+        {
+          "count": 34,
+          "timestamp": "2026-04-25T00:00:00Z",
+          "uniques": 17
+        },
+        {
+          "count": 32,
+          "timestamp": "2026-04-26T00:00:00Z",
+          "uniques": 14
+        },
+        {
+          "count": 16,
+          "timestamp": "2026-04-27T00:00:00Z",
+          "uniques": 12
+        },
+        {
+          "count": 20,
+          "timestamp": "2026-04-28T00:00:00Z",
+          "uniques": 13
+        },
+        {
+          "count": 46,
+          "timestamp": "2026-04-29T00:00:00Z",
+          "uniques": 16
+        },
+        {
+          "count": 41,
+          "timestamp": "2026-04-30T00:00:00Z",
+          "uniques": 12
+        }
+      ]
+    }
+  }
+}
