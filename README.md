@@ -31,31 +31,30 @@ latest report for each repository. If GitHub Pages is enabled from the
 
 ## Required Secrets
 
-Add these repository secrets:
+Add this repository secret:
 
-- `GH_STATS_READ_TOKEN`
 - `GH_STATS_WRITE_TOKEN`
 
-`GH_STATS_READ_TOKEN` needs access to:
+The workflow passes it as both `ghtoken` and `write-token`, so one token
+covers reads and writes. It needs access to all four repositories:
 
 - `NVIDIAGameWorks/rtx-remix`
 - `NVIDIAGameWorks/dxvk-remix`
 - `NVIDIAGameWorks/toolkit-remix`
+- `NVIDIAGameWorks/rtx-remix-stats` (snapshot and report storage)
 
 Required fine-grained token permissions:
 
 - `Administration: Read-only` for traffic stats
-- `Contents: Read-only` for release data
+- `Contents: Read and write` for release data, stargazer timestamps, and
+  pushing to the data branch
 - `Metadata: Read-only`, which GitHub grants automatically
 
-`GH_STATS_WRITE_TOKEN` needs access to:
-
-- `NVIDIAGameWorks/rtx-remix-stats`
-
-Required fine-grained token permissions:
-
-- `Contents: Read and write` on `NVIDIAGameWorks/rtx-remix-stats`
-- `Metadata: Read-only`, which GitHub grants automatically
+`Contents` must be write rather than read because GitHub
+[restricted the stargazer listing](https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/)
+to a repository's own admins and collaborators on 2026-06-30. If that listing
+is unavailable the run logs a warning and continues; the star count still
+comes from repository metadata, so only the per-user star timeline stalls.
 
 ## Viewing Reports
 
