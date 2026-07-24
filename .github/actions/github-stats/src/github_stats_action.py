@@ -31,6 +31,12 @@ DEFAULT_USER_AGENT = "github-stats-action-nv/1"
 DATA_REMOTE_NAME = "github-stats-data"
 INIT_BRANCH_PREFIX = "github-stats-data-init-"
 
+# GitHub restricted the stargazer listing to a repository's admins and collaborators
+# (announced 2026-06-30). Tokens without that access now get 403 or 404 instead of the
+# list, so this section is optional: the star *count* still arrives via repository
+# metadata, and reports fall back to the newest snapshot that carries a stargazer list.
+RESTRICTED_LISTING_STATUSES = frozenset({403, 404})
+
 
 class ConfigError(RuntimeError):
     """Raised when action inputs are invalid."""
@@ -38,6 +44,10 @@ class ConfigError(RuntimeError):
 
 class ApiError(RuntimeError):
     """Raised when the GitHub API returns an error response."""
+
+    def __init__(self, message: str, status: int | None = None):
+        super().__init__(message)
+        self.status = status
 
 
 @dataclasses.dataclass(frozen=True)
@@ -151,6 +161,13 @@ def snapshot_filename(generated_at: str) -> str:
     return generated_at.replace("-", "").replace(":", "").replace("Z", "Z") + ".json"
 
 
+def warn(message: str) -> None:
+    """Report a non-fatal problem, surfacing it as an annotation under Actions."""
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::warning::{message}")
+    print(f"warning: {message}", file=sys.stderr)
+
+
 class GitHubClient:
     def __init__(self, config: Config):
         self.config = config
@@ -229,7 +246,7 @@ class GitHubClient:
             detail += f": {message}"
         if exc.code == 403 and rate_remaining == "0" and rate_reset:
             detail += f" (rate limit reset epoch: {rate_reset})"
-        return ApiError(detail)
+        return ApiError(detail, status=exc.code)
 
 
 def fetch_snapshot(config: Config) -> dict[str, Any]:
@@ -261,11 +278,21 @@ def fetch_snapshot(config: Config) -> dict[str, Any]:
     stargazers: list[dict[str, Any]] = []
     if config.include_stargazers:
         print("Fetching stargazer timestamps")
-        raw_stargazers = client.get_paginated(
-            f"/repos/{owner}/{repo}/stargazers",
-            accept="application/vnd.github.star+json",
-        )
-        stargazers = normalize_stargazers(raw_stargazers)
+        try:
+            raw_stargazers = client.get_paginated(
+                f"/repos/{owner}/{repo}/stargazers",
+                accept="application/vnd.github.star+json",
+            )
+        except ApiError as exc:
+            if exc.status not in RESTRICTED_LISTING_STATUSES:
+                raise
+            warn(
+                f"stargazer timestamps unavailable for {config.repository}: {exc}. "
+                "GitHub limits this listing to the repository's admins and collaborators; "
+                "the star count is still recorded and earlier stargazer history is reused."
+            )
+        else:
+            stargazers = normalize_stargazers(raw_stargazers)
 
     forks: list[dict[str, Any]] = []
     if config.include_forks:

@@ -37,7 +37,9 @@ jobs:
         id: stats
         uses: ./.github/actions/github-stats
         with:
-          ghtoken: ${{ secrets.GH_STATS_READ_TOKEN }}
+          # Stargazer listing needs Contents write (GitHub restriction, 2026-06-30),
+          # so reads use the same token as writes.
+          ghtoken: ${{ secrets.GH_STATS_WRITE_TOKEN }}
           write-token: ${{ secrets.GH_STATS_WRITE_TOKEN }}
           repository: ${{ matrix.repository }}
           data-repository: NVIDIAGameWorks/rtx-remix-stats
