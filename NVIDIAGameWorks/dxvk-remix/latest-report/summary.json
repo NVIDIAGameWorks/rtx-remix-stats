@@ -1,29 +1,29 @@
 {
   "aggregate_counts": {
-    "forks": 133,
+    "forks": 134,
     "open_issues": 36,
-    "stargazers": 416,
+    "stargazers": 417,
     "subscribers": 28,
-    "watchers": 416
+    "watchers": 417
   },
   "days": {
-    "clones": 133,
-    "views": 133
+    "clones": 134,
+    "views": 134
   },
-  "generated_at": "2026-08-25T03:32:54Z",
+  "generated_at": "2026-08-26T03:36:51Z",
   "monthly_release_asset_downloads": 0,
   "report_path": "NVIDIAGameWorks/dxvk-remix/latest-report/report.html",
   "report_url": "",
   "repository": "NVIDIAGameWorks/dxvk-remix",
-  "snapshot_count": 127,
+  "snapshot_count": 128,
   "totals": {
-    "clones": 40124,
+    "clones": 40226,
     "forks": 107,
     "release_asset_downloads": 0,
     "release_assets": 9,
-    "stargazers": 416,
-    "unique_cloners": 5048,
-    "unique_visitors": 4461,
-    "views": 13502
+    "stargazers": 417,
+    "unique_cloners": 5083,
+    "unique_visitors": 4506,
+    "views": 13794
   }
 }
