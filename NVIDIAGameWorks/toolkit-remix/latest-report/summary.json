@@ -1,29 +1,29 @@
 {
   "aggregate_counts": {
     "forks": 36,
-    "open_issues": 5,
+    "open_issues": 4,
     "stargazers": 72,
     "subscribers": 18,
     "watchers": 72
   },
   "days": {
-    "clones": 184,
-    "views": 184
+    "clones": 186,
+    "views": 186
   },
-  "generated_at": "2026-10-15T08:18:45Z",
+  "generated_at": "2026-10-16T08:11:25Z",
   "monthly_release_asset_downloads": 0,
   "report_path": "NVIDIAGameWorks/toolkit-remix/latest-report/report.html",
   "report_url": "",
   "repository": "NVIDIAGameWorks/toolkit-remix",
-  "snapshot_count": 178,
+  "snapshot_count": 179,
   "totals": {
-    "clones": 12312,
+    "clones": 12853,
     "forks": 36,
     "release_asset_downloads": 0,
     "release_assets": 0,
     "stargazers": 72,
-    "unique_cloners": 3429,
-    "unique_visitors": 2309,
-    "views": 6280
+    "unique_cloners": 3631,
+    "unique_visitors": 2346,
+    "views": 6357
   }
 }
