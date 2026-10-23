@@ -7,6 +7,7 @@ The workflow in `.github/workflows/repository-stats.yml` collects stats for:
 - `NVIDIAGameWorks/rtx-remix`
 - `NVIDIAGameWorks/dxvk-remix`
 - `NVIDIAGameWorks/toolkit-remix`
+- `NVIDIAGameWorks/rtx-remix-minecraft`
 
 Each workflow run commits the generated
 HTML reports to the `github-repo-stats` branch under:
@@ -15,6 +16,7 @@ HTML reports to the `github-repo-stats` branch under:
 NVIDIAGameWorks/rtx-remix/latest-report/report.html
 NVIDIAGameWorks/dxvk-remix/latest-report/report.html
 NVIDIAGameWorks/toolkit-remix/latest-report/report.html
+NVIDIAGameWorks/rtx-remix-minecraft/latest-report/report.html
 ```
 
 The workflow also uploads each latest report as an Actions artifact named:
@@ -23,6 +25,7 @@ The workflow also uploads each latest report as an Actions artifact named:
 stats-rtx-remix
 stats-dxvk-remix
 stats-toolkit-remix
+stats-rtx-remix-minecraft
 ```
 
 The generated data branch also includes a root `index.html` that links to the
@@ -36,12 +39,17 @@ Add this repository secret:
 - `GH_STATS_WRITE_TOKEN`
 
 The workflow passes it as both `ghtoken` and `write-token`, so one token
-covers reads and writes. It needs access to all four repositories:
+covers reads and writes. It needs access to all five repositories:
 
 - `NVIDIAGameWorks/rtx-remix`
 - `NVIDIAGameWorks/dxvk-remix`
 - `NVIDIAGameWorks/toolkit-remix`
+- `NVIDIAGameWorks/rtx-remix-minecraft`
 - `NVIDIAGameWorks/rtx-remix-stats` (snapshot and report storage)
+
+If the existing token is limited to selected repositories, add
+`NVIDIAGameWorks/rtx-remix-minecraft` to its repository access. No additional
+token or secret is needed.
 
 Required fine-grained token permissions:
 

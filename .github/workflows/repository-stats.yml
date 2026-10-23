@@ -26,6 +26,8 @@ jobs:
             repository: NVIDIAGameWorks/dxvk-remix
           - id: toolkit-remix
             repository: NVIDIAGameWorks/toolkit-remix
+          - id: rtx-remix-minecraft
+            repository: NVIDIAGameWorks/rtx-remix-minecraft
 
     steps:
       - uses: actions/checkout@v6
