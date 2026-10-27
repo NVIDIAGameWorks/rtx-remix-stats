@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Statistics for NVIDIAGameWorks/rtx-remix-minecraft</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1110;
+      --panel: #111c17;
+      --panel-soft: #14231d;
+      --ink: #edf7f1;
+      --muted: #9caea5;
+      --line: #263831;
+      --line-strong: #3b5449;
+      --blue: #7db7ff;
+      --green: #81e2b2;
+      --cyan: #67e8f9;
+      --amber: #f4c76d;
+      --rose: #fb7185;
+      --chart-axis: #52685d;
+      --chart-grid: #22342d;
+      --chart-label: #a5b6ae;
+      --shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #101d18 0, #0d1714 260px, var(--bg) 100%);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.38;
+    }
+    a {
+      color: #9bc9ff;
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.16em;
+    }
+    .topbar, .section-nav, .report-shell, footer {
+      max-width: min(96vw, 1600px);
+      margin: 0 auto;
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+    .topbar {
+      align-items: center;
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      padding-top: 20px;
+      padding-bottom: 12px;
+    }
+    .brand {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .brand a:hover {
+      color: var(--green);
+    }
+    .brand-mark {
+      align-items: center;
+      background: #0f1915;
+      border: 1px solid #315144;
+      border-radius: 8px;
+      color: #f1fff7;
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      font-weight: 800;
+      height: 34px;
+      justify-content: center;
+      letter-spacing: 0;
+      width: 34px;
+    }
+    .eyebrow {
+      color: var(--green);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin: 0 0 4px;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { letter-spacing: 0; line-height: 1.12; }
+    h1 {
+      font-size: 1.45rem;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    h2 { font-size: 1.22rem; margin: 0; }
+    h3 { font-size: 0.98rem; margin: 0 0 10px; }
+    .run-meta {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .run-meta span {
+      background: rgba(17, 28, 23, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+    }
+    .section-nav {
+      backdrop-filter: blur(12px);
+      background: rgba(11, 17, 16, 0.84);
+      border-bottom: 1px solid rgba(59, 84, 73, 0.62);
+      border-top: 1px solid rgba(38, 56, 49, 0.82);
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      padding-top: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .section-nav a {
+      background: #121d18;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #dcebe4;
+      flex: 0 0 auto;
+      font-size: 0.83rem;
+      font-weight: 650;
+      padding: 6px 10px;
+      text-decoration: none;
+    }
+    .section-nav a:hover {
+      border-color: var(--line-strong);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.26);
+    }
+    .report-shell {
+      display: grid;
+      gap: 16px;
+      padding-bottom: 24px;
+      padding-top: 16px;
+    }
+    .intro-panel {
+      align-items: center;
+      background:
+        linear-gradient(135deg, rgba(15, 25, 21, 0.99), rgba(18, 58, 52, 0.96));
+      border: 1px solid rgba(129, 226, 178, 0.14);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      color: #f9fbf8;
+      display: grid;
+      gap: 18px;
+      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+      padding: 18px;
+    }
+    .intro-panel .eyebrow { color: #8de1b5; }
+    .intro-panel h2 {
+      font-size: 1.8rem;
+      margin: 0 0 7px;
+      overflow-wrap: anywhere;
+    }
+    .description {
+      color: #d7e2dc;
+      font-size: 0.95rem;
+      margin: 0;
+      max-width: 760px;
+    }
+    .meta, .note {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin: 7px 0 0;
+    }
+    .intro-panel .meta { color: #c8d6d0; }
+    .intro-panel a { color: #b7d9ff; }
+    .overview {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .overview-item {
+      background: rgba(255, 255, 255, 0.075);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 8px;
+      min-width: 0;
+      padding: 12px;
+    }
+    .overview-item span,
+    .metric span {
+      color: inherit;
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      opacity: 0.74;
+      text-transform: uppercase;
+    }
+    .overview-item strong,
+    .metric strong {
+      display: block;
+      font-size: 1.55rem;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+    .overview-item small,
+    .metric small {
+      display: block;
+      font-size: 0.78rem;
+      margin-top: 7px;
+      opacity: 0.72;
+    }
+    .overview-item.blue { border-top: 3px solid #7fb4ff; }
+    .overview-item.green { border-top: 3px solid #8de1b5; }
+    .overview-item.cyan { border-top: 3px solid #67e8f9; }
+    .overview-item.amber { border-top: 3px solid #f6c76b; }
+    .report-section {
+      background: rgba(17, 28, 23, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+      padding: 16px;
+    }
+    .section-heading {
+      align-items: end;
+      display: grid;
+      gap: 4px;
+      grid-template-columns: minmax(0, 1fr);
+      margin-bottom: 12px;
+    }
+    .metrics {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      margin: 0 0 12px;
+    }
+    .metric {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      padding: 10px 12px;
+    }
+    .metric span { color: var(--muted); opacity: 1; }
+    .metric strong { color: var(--ink); font-size: 1.38rem; }
+    .metric small { color: var(--muted); opacity: 1; }
+    .content-grid {
+      align-items: start;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: minmax(0, 1.42fr) minmax(0, 0.82fr);
+    }
+    .chart-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 12px;
+    }
+    .chart {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 10px;
+    }
+    .chart svg {
+      display: block;
+      height: auto;
+      max-width: 100%;
+      width: 100%;
+    }
+    .legend {
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.78rem;
+      margin-top: 8px;
+    }
+    .legend i {
+      border-radius: 999px;
+      display: inline-block;
+      height: 8px;
+      margin-right: 5px;
+      width: 8px;
+    }
+    .table-panel {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding: 10px;
+    }
+    .wide-table { margin-top: 12px; }
+    table {
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      width: 100%;
+    }
+    caption {
+      color: #d9e8e0;
+      font-size: 0.82rem;
+      font-weight: 750;
+      margin: 0 0 7px;
+      text-align: left;
+    }
+    th, td {
+      border-bottom: 1px solid #1e2c26;
+      padding: 7px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; }
+    .split {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .bar-cell {
+      min-width: 56px;
+      width: 18%;
+    }
+    .bar {
+      background: linear-gradient(90deg, #6eb6ff, #8de1b5);
+      border-radius: 999px;
+      display: block;
+      height: 7px;
+    }
+    .bucket-tabs {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      position: relative;
+    }
+    .bucket-tabs > .bucket-radio {
+      height: 1px;
+      margin: -1px;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+      position: absolute;
+      width: 1px;
+    }
+    .bucket-tab-strip {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.74rem;
+      gap: 6px;
+      letter-spacing: 0;
+    }
+    .bucket-tab-strip::before {
+      content: "Granularity:";
+      font-weight: 700;
+      letter-spacing: 0;
+      margin-right: 4px;
+      text-transform: uppercase;
+    }
+    .bucket-tab-label {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #dcebe4;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      padding: 5px 13px;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+      user-select: none;
+    }
+    .bucket-tab-label:hover {
+      border-color: var(--line-strong);
+      color: var(--green);
+    }
+    .bucket-tabs > .bucket-radio:focus-visible + .bucket-tab-strip > .bucket-tab-label,
+    .bucket-tabs > .bucket-radio:focus-visible ~ .bucket-tab-strip > .bucket-tab-label {
+      outline: 2px solid transparent;
+    }
+    .bucket-tabs:has(> .bucket-radio[id$="-day"]:checked) .bucket-tab-strip > label[data-bucket="day"],
+    .bucket-tabs:has(> .bucket-radio[id$="-week"]:checked) .bucket-tab-strip > label[data-bucket="week"],
+    .bucket-tabs:has(> .bucket-radio[id$="-month"]:checked) .bucket-tab-strip > label[data-bucket="month"] {
+      background: var(--green);
+      border-color: var(--green);
+      color: #0d1714;
+    }
+    .bucket-tabs > .bucket-panel { display: none; min-width: 0; }
+    .bucket-tabs > .bucket-radio[id$="-day"]:checked ~ .bucket-panel[data-bucket="day"],
+    .bucket-tabs > .bucket-radio[id$="-week"]:checked ~ .bucket-panel[data-bucket="week"],
+    .bucket-tabs > .bucket-radio[id$="-month"]:checked ~ .bucket-panel[data-bucket="month"] {
+      display: block;
+    }
+    .release-subsections {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .release-subsection {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .release-subsection h3 {
+      margin: 0 0 4px;
+    }
+    .release-subsection .note {
+      margin: 0 0 12px;
+    }
+    .release-subsection .content-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .hbar-chart {
+      background: #0f1814;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      padding: 12px;
+    }
+    .hbar-chart .chart-title {
+      color: #d9e8e0;
+      font-size: 0.82rem;
+      font-weight: 750;
+      letter-spacing: 0;
+      margin: 0 0 4px;
+    }
+    .hbar-row {
+      align-items: center;
+      column-gap: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.6fr) auto auto;
+      min-width: 0;
+      row-gap: 0;
+    }
+    .hbar-label {
+      color: #dcebe4;
+      font-size: 0.82rem;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .hbar-label a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .hbar-label a:hover {
+      color: var(--green);
+      text-decoration: underline;
+    }
+    .hbar-track {
+      background: rgba(125, 183, 255, 0.12);
+      border-radius: 999px;
+      height: 8px;
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .hbar-fill {
+      border-radius: 999px;
+      display: block;
+      height: 100%;
+    }
+    .hbar-value {
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      text-align: right;
+    }
+    .hbar-secondary {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    @media (max-width: 720px) {
+      .hbar-row {
+        grid-template-columns: minmax(0, 1.2fr) auto;
+        row-gap: 4px;
+      }
+      .hbar-track {
+        grid-column: 1 / -1;
+      }
+      .hbar-value {
+        grid-column: auto;
+      }
+      .hbar-secondary {
+        grid-column: auto;
+      }
+    }
+    footer {
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding-bottom: 32px;
+      padding-top: 4px;
+    }
+    @media (max-width: 980px) {
+      .intro-panel,
+      .content-grid,
+      .chart-grid,
+      .split,
+      .release-subsection .content-grid {
+        grid-template-columns: 1fr;
+      }
+      .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .topbar, .section-nav, .report-shell, footer {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .run-meta { justify-content: flex-start; }
+      .intro-panel, .report-section { padding: 12px; }
+      .overview { grid-template-columns: 1fr; }
+      h1 { font-size: 1.22rem; }
+      .intro-panel h2 { font-size: 1.42rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">GS</span>
+      <div>
+        <p class="eyebrow">Service intelligence</p>
+        <h1><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft">NVIDIAGameWorks/rtx-remix-minecraft</a></h1>
+      </div>
+    </div>
+    <div class="run-meta">
+      <span>2026-10-27T19:35:43Z UTC</span>
+      <span>1 snapshot(s)</span>
+    </div>
+  </header>
+  <nav class="section-nav" aria-label="Report sections">
+      <a href="#views">Views</a>
+      <a href="#clones">Clones</a>
+      <a href="#stargazers">Stars</a>
+      <a href="#forks">Forks</a>
+      <a href="#repository-counters">Counters</a>
+      <a href="#releases">Releases</a>
+      <a href="#popular">Acquisition</a>
+  </nav>
+  <main class="report-shell">
+    <section class="intro-panel" aria-label="Report summary">
+      <div>
+        <p class="eyebrow">Latest report</p>
+        <h2>NVIDIAGameWorks/rtx-remix-minecraft</h2>
+        <p class="description">Path-traced Minecraft Java 1.21.1 through NVIDIA RTX Remix: a Fabric mod (beta)</p>
+        
+      </div>
+      <div class="overview"><div class="overview-item blue"><span>Views</span><strong>39,665</strong><small>daily total sum</small></div><div class="overview-item green"><span>Visitors</span><strong>15,154</strong><small>daily unique sum</small></div><div class="overview-item cyan"><span>Stars</span><strong>528</strong><small>latest counter</small></div><div class="overview-item amber"><span>Release downloads</span><strong>17,764</strong><small>tracked assets</small></div></div>
+    </section>
+    <section id="views" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Traffic</p>
+        <h2>Views</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Unique visitors</span><strong>15,154</strong><small>sum of daily uniques</small></div><div class="metric"><span>Total views</span><strong>39,665</strong><small>sum of daily views</small></div><div class="metric"><span>Days covered</span><strong>14</strong><small>daily points</small></div></div>
+      <div class="content-grid">
+        <div class="bucket-tabs"><input type="radio" name="bt-traffic-views" id="bt-traffic-views-day" checked class="bucket-radio" /><input type="radio" name="bt-traffic-views" id="bt-traffic-views-week" class="bucket-radio" /><input type="radio" name="bt-traffic-views" id="bt-traffic-views-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-traffic-views-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-traffic-views-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-traffic-views-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><div class="chart" role="img" aria-label="Repository views per day">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Repository views per day</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">5,000</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">10,000</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">15,000</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">20,000</text><text x="56.0" y="248" text-anchor="middle" class="label">10-13</text><text x="486.8" y="248" text-anchor="middle" class="label">10-20</text><text x="856.0" y="248" text-anchor="middle" class="label">10-26</text>
+    <path d="M 56.0 218.0 L 117.5 218.0 L 179.1 218.0 L 240.6 218.0 L 302.2 218.0 L 363.7 218.0 L 425.2 218.0 L 486.8 218.0 L 548.3 218.0 L 609.8 218.0 L 671.4 207.6 L 732.9 63.8 L 794.5 65.4 L 856.0 138.5" fill="none" stroke="#7db7ff" stroke-width="2.4"><title>Total views</title></path><circle cx="56.0" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-13: 0</title></circle><circle cx="117.5" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-14: 0</title></circle><circle cx="179.1" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-15: 0</title></circle><circle cx="240.6" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-16: 0</title></circle><circle cx="302.2" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-17: 0</title></circle><circle cx="363.7" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-18: 0</title></circle><circle cx="425.2" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-19: 0</title></circle><circle cx="486.8" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-20: 0</title></circle><circle cx="548.3" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-21: 0</title></circle><circle cx="609.8" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-22: 4</title></circle><circle cx="671.4" cy="207.6" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-23: 1,038</title></circle><circle cx="732.9" cy="63.8" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-24: 15,417</title></circle><circle cx="794.5" cy="65.4" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-25: 15,255</title></circle><circle cx="856.0" cy="138.5" r="3.0" fill="#7db7ff" class="point"><title>Total views — 10-26: 7,951</title></circle><path d="M 56.0 218.0 L 117.5 218.0 L 179.1 218.0 L 240.6 218.0 L 302.2 218.0 L 363.7 218.0 L 425.2 218.0 L 486.8 218.0 L 548.3 218.0 L 609.8 218.0 L 671.4 214.9 L 732.9 165.4 L 794.5 156.4 L 856.0 183.7" fill="none" stroke="#81e2b2" stroke-width="2.4"><title>Unique visitors</title></path><circle cx="56.0" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-13: 0</title></circle><circle cx="117.5" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-14: 0</title></circle><circle cx="179.1" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-15: 0</title></circle><circle cx="240.6" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-16: 0</title></circle><circle cx="302.2" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-17: 0</title></circle><circle cx="363.7" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-18: 0</title></circle><circle cx="425.2" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-19: 0</title></circle><circle cx="486.8" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-20: 0</title></circle><circle cx="548.3" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-21: 0</title></circle><circle cx="609.8" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-22: 1</title></circle><circle cx="671.4" cy="214.9" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-23: 310</title></circle><circle cx="732.9" cy="165.4" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-24: 5,262</title></circle><circle cx="794.5" cy="156.4" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-25: 6,155</title></circle><circle cx="856.0" cy="183.7" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 10-26: 3,426</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Total views</span><span><i style="background:#81e2b2"></i>Unique visitors</span></div>
+</div></div><div class="bucket-panel" data-bucket="week"><div class="chart" role="img" aria-label="Repository views per week">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Repository views per week</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">12,500</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">25,000</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">37,500</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">50,000</text><text x="56.0" y="248" text-anchor="middle" class="label">2026-W42</text><text x="456.0" y="248" text-anchor="middle" class="label">2026-W43</text><text x="856.0" y="248" text-anchor="middle" class="label">2026-W44</text>
+    <path d="M 56.0 218.0 L 456.0 91.1 L 856.0 186.2" fill="none" stroke="#7db7ff" stroke-width="2.4"><title>Total views</title></path><circle cx="56.0" cy="218.0" r="3.0" fill="#7db7ff" class="point"><title>Total views — 2026-W42: 0</title></circle><circle cx="456.0" cy="91.1" r="3.0" fill="#7db7ff" class="point"><title>Total views — 2026-W43: 31,714</title></circle><circle cx="856.0" cy="186.2" r="3.0" fill="#7db7ff" class="point"><title>Total views — 2026-W44: 7,951</title></circle><path d="M 56.0 218.0 L 456.0 171.1 L 856.0 204.3" fill="none" stroke="#81e2b2" stroke-width="2.4"><title>Unique visitors</title></path><circle cx="56.0" cy="218.0" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 2026-W42: 0</title></circle><circle cx="456.0" cy="171.1" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 2026-W43: 11,728</title></circle><circle cx="856.0" cy="204.3" r="3.0" fill="#81e2b2" class="point"><title>Unique visitors — 2026-W44: 3,426</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Total views</span><span><i style="background:#81e2b2"></i>Unique visitors</span></div>
+</div></div><div class="bucket-panel" data-bucket="month"><div class="chart" role="img" aria-label="Repository views per month">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Repository views per month</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">12,500</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">25,000</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">37,500</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">50,000</text><text x="456.0" y="248" text-anchor="middle" class="label">2026-10</text>
+    <circle cx="456.0" cy="59.3" r="4" fill="#7db7ff"><title>Total views — 2026-10: 39,665</title></circle><circle cx="456.0" cy="157.4" r="4" fill="#81e2b2"><title>Unique visitors — 2026-10: 15,154</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Total views</span><span><i style="background:#81e2b2"></i>Unique visitors</span></div>
+</div></div></div>
+        <div class="table-panel"><table><caption>Recent view data</caption><thead><tr><th>Date</th><th class="num">Uniques</th><th class="num">Views</th></tr></thead><tbody><tr><td>2026-10-26</td><td class="num">3,426</td><td class="num">7,951</td></tr><tr><td>2026-10-25</td><td class="num">6,155</td><td class="num">15,255</td></tr><tr><td>2026-10-24</td><td class="num">5,262</td><td class="num">15,417</td></tr><tr><td>2026-10-23</td><td class="num">310</td><td class="num">1,038</td></tr><tr><td>2026-10-22</td><td class="num">1</td><td class="num">4</td></tr><tr><td>2026-10-21</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-20</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-19</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-18</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-17</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-16</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-15</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-14</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-13</td><td class="num">0</td><td class="num">0</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="clones" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Distribution</p>
+        <h2>Clones</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Unique cloners</span><strong>439</strong><small>sum of daily uniques</small></div><div class="metric"><span>Total clones</span><strong>806</strong><small>sum of daily clones</small></div><div class="metric"><span>Days covered</span><strong>14</strong><small>daily points</small></div></div>
+      <div class="content-grid">
+        <div class="bucket-tabs"><input type="radio" name="bt-traffic-clones" id="bt-traffic-clones-day" checked class="bucket-radio" /><input type="radio" name="bt-traffic-clones" id="bt-traffic-clones-week" class="bucket-radio" /><input type="radio" name="bt-traffic-clones" id="bt-traffic-clones-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-traffic-clones-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-traffic-clones-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-traffic-clones-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><div class="chart" role="img" aria-label="Repository clones per day">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Repository clones per day</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">125</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">250</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">375</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">500</text><text x="56.0" y="248" text-anchor="middle" class="label">10-13</text><text x="486.8" y="248" text-anchor="middle" class="label">10-20</text><text x="856.0" y="248" text-anchor="middle" class="label">10-26</text>
+    <path d="M 56.0 218.0 L 117.5 218.0 L 179.1 218.0 L 240.6 218.0 L 302.2 218.0 L 363.7 218.0 L 425.2 218.0 L 486.8 218.0 L 548.3 218.0 L 609.8 217.6 L 671.4 176.4 L 732.9 86.0 L 794.5 138.4 L 856.0 149.2" fill="none" stroke="#b69cff" stroke-width="2.4"><title>Total clones</title></path><circle cx="56.0" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-13: 0</title></circle><circle cx="117.5" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-14: 0</title></circle><circle cx="179.1" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-15: 0</title></circle><circle cx="240.6" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-16: 0</title></circle><circle cx="302.2" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-17: 0</title></circle><circle cx="363.7" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-18: 0</title></circle><circle cx="425.2" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-19: 0</title></circle><circle cx="486.8" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-20: 0</title></circle><circle cx="548.3" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-21: 0</title></circle><circle cx="609.8" cy="217.6" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-22: 1</title></circle><circle cx="671.4" cy="176.4" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-23: 104</title></circle><circle cx="732.9" cy="86.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-24: 330</title></circle><circle cx="794.5" cy="138.4" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-25: 199</title></circle><circle cx="856.0" cy="149.2" r="3.0" fill="#b69cff" class="point"><title>Total clones — 10-26: 172</title></circle><path d="M 56.0 218.0 L 117.5 218.0 L 179.1 218.0 L 240.6 218.0 L 302.2 218.0 L 363.7 218.0 L 425.2 218.0 L 486.8 218.0 L 548.3 218.0 L 609.8 217.6 L 671.4 193.2 L 732.9 151.6 L 794.5 163.2 L 856.0 188.8" fill="none" stroke="#f4c76d" stroke-width="2.4"><title>Unique cloners</title></path><circle cx="56.0" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-13: 0</title></circle><circle cx="117.5" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-14: 0</title></circle><circle cx="179.1" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-15: 0</title></circle><circle cx="240.6" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-16: 0</title></circle><circle cx="302.2" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-17: 0</title></circle><circle cx="363.7" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-18: 0</title></circle><circle cx="425.2" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-19: 0</title></circle><circle cx="486.8" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-20: 0</title></circle><circle cx="548.3" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-21: 0</title></circle><circle cx="609.8" cy="217.6" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-22: 1</title></circle><circle cx="671.4" cy="193.2" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-23: 62</title></circle><circle cx="732.9" cy="151.6" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-24: 166</title></circle><circle cx="794.5" cy="163.2" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-25: 137</title></circle><circle cx="856.0" cy="188.8" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 10-26: 73</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#b69cff"></i>Total clones</span><span><i style="background:#f4c76d"></i>Unique cloners</span></div>
+</div></div><div class="bucket-panel" data-bucket="week"><div class="chart" role="img" aria-label="Repository clones per week">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Repository clones per week</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">250</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">500</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">750</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">1,000</text><text x="56.0" y="248" text-anchor="middle" class="label">2026-W42</text><text x="456.0" y="248" text-anchor="middle" class="label">2026-W43</text><text x="856.0" y="248" text-anchor="middle" class="label">2026-W44</text>
+    <path d="M 56.0 218.0 L 456.0 91.2 L 856.0 183.6" fill="none" stroke="#b69cff" stroke-width="2.4"><title>Total clones</title></path><circle cx="56.0" cy="218.0" r="3.0" fill="#b69cff" class="point"><title>Total clones — 2026-W42: 0</title></circle><circle cx="456.0" cy="91.2" r="3.0" fill="#b69cff" class="point"><title>Total clones — 2026-W43: 634</title></circle><circle cx="856.0" cy="183.6" r="3.0" fill="#b69cff" class="point"><title>Total clones — 2026-W44: 172</title></circle><path d="M 56.0 218.0 L 456.0 144.8 L 856.0 203.4" fill="none" stroke="#f4c76d" stroke-width="2.4"><title>Unique cloners</title></path><circle cx="56.0" cy="218.0" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 2026-W42: 0</title></circle><circle cx="456.0" cy="144.8" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 2026-W43: 366</title></circle><circle cx="856.0" cy="203.4" r="3.0" fill="#f4c76d" class="point"><title>Unique cloners — 2026-W44: 73</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#b69cff"></i>Total clones</span><span><i style="background:#f4c76d"></i>Unique cloners</span></div>
+</div></div><div class="bucket-panel" data-bucket="month"><div class="chart" role="img" aria-label="Repository clones per month">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Repository clones per month</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">250</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">500</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">750</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">1,000</text><text x="456.0" y="248" text-anchor="middle" class="label">2026-10</text>
+    <circle cx="456.0" cy="56.8" r="4" fill="#b69cff"><title>Total clones — 2026-10: 806</title></circle><circle cx="456.0" cy="130.2" r="4" fill="#f4c76d"><title>Unique cloners — 2026-10: 439</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#b69cff"></i>Total clones</span><span><i style="background:#f4c76d"></i>Unique cloners</span></div>
+</div></div></div>
+        <div class="table-panel"><table><caption>Recent clone data</caption><thead><tr><th>Date</th><th class="num">Uniques</th><th class="num">Clones</th></tr></thead><tbody><tr><td>2026-10-26</td><td class="num">73</td><td class="num">172</td></tr><tr><td>2026-10-25</td><td class="num">137</td><td class="num">199</td></tr><tr><td>2026-10-24</td><td class="num">166</td><td class="num">330</td></tr><tr><td>2026-10-23</td><td class="num">62</td><td class="num">104</td></tr><tr><td>2026-10-22</td><td class="num">1</td><td class="num">1</td></tr><tr><td>2026-10-21</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-20</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-19</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-18</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-17</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-16</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-15</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-14</td><td class="num">0</td><td class="num">0</td></tr><tr><td>2026-10-13</td><td class="num">0</td><td class="num">0</td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="stargazers" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Community</p>
+        <h2>Stargazers</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Stargazers</span><strong>528</strong><small>current API listing</small></div><div class="metric"><span>Days with stars</span><strong>5</strong><small>event days</small></div></div>
+      <div class="content-grid">
+        <div class="bucket-tabs"><input type="radio" name="bt-stargazers" id="bt-stargazers-day" checked class="bucket-radio" /><input type="radio" name="bt-stargazers" id="bt-stargazers-week" class="bucket-radio" /><input type="radio" name="bt-stargazers" id="bt-stargazers-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-stargazers-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-stargazers-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-stargazers-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><div class="chart" role="img" aria-label="New stargazers per day">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">New stargazers per day</text>
+    <text x="14" y="16" class="label">new stars / day</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">125</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">250</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">375</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">500</text><rect x="64.0" y="169.0" width="145.2" height="9.0" fill="#67e8f9" rx="2" ry="2"><title>New stars (2026-10-23): 29</title></rect><text x="136.6" y="208" text-anchor="middle" class="label">10-23</text><rect x="225.2" y="107.2" width="145.2" height="70.8" fill="#67e8f9" rx="2" ry="2"><title>New stars (2026-10-24): 227</title></rect><text x="297.8" y="208" text-anchor="middle" class="label">10-24</text><rect x="386.4" y="133.1" width="145.2" height="44.9" fill="#67e8f9" rx="2" ry="2"><title>New stars (2026-10-25): 144</title></rect><text x="459.0" y="208" text-anchor="middle" class="label">10-25</text><rect x="547.6" y="156.8" width="145.2" height="21.2" fill="#67e8f9" rx="2" ry="2"><title>New stars (2026-10-26): 68</title></rect><text x="620.2" y="208" text-anchor="middle" class="label">10-26</text><rect x="708.8" y="159.3" width="145.2" height="18.7" fill="#67e8f9" rx="2" ry="2"><title>New stars (2026-10-27): 60</title></rect><text x="781.4" y="208" text-anchor="middle" class="label">10-27</text>
+  </svg>
+  <div class="legend"><span><i style="background:#67e8f9"></i>New stars</span></div>
+</div></div><div class="bucket-panel" data-bucket="week"><div class="chart" role="img" aria-label="New stargazers per week">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">New stargazers per week</text>
+    <text x="14" y="16" class="label">new stars / week</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">125</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">250</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">375</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">500</text><rect x="64.0" y="53.2" width="387.0" height="124.8" fill="#67e8f9" rx="2" ry="2"><title>New stars (2026-W43): 400</title></rect><text x="257.5" y="208" text-anchor="middle" class="label">2026-W43</text><rect x="467.0" y="138.1" width="387.0" height="39.9" fill="#67e8f9" rx="2" ry="2"><title>New stars (2026-W44): 128</title></rect><text x="660.5" y="208" text-anchor="middle" class="label">2026-W44</text>
+  </svg>
+  <div class="legend"><span><i style="background:#67e8f9"></i>New stars</span></div>
+</div></div><div class="bucket-panel" data-bucket="month"><div class="chart" role="img" aria-label="New stargazers per month">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">New stargazers per month</text>
+    <text x="14" y="16" class="label">new stars / month</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">250</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">500</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">750</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">1,000</text><rect x="64.0" y="95.6" width="790.0" height="82.4" fill="#67e8f9" rx="2" ry="2"><title>New stars (2026-10): 528</title></rect><text x="459.0" y="208" text-anchor="middle" class="label">2026-10</text>
+  </svg>
+  <div class="legend"><span><i style="background:#67e8f9"></i>New stars</span></div>
+</div></div></div>
+        <div class="table-panel"><table><caption>Recent stargazer events</caption><thead><tr><th>Date</th><th>Item</th></tr></thead><tbody><tr><td>2026-10-27</td><td><a href="https://github.com/mateimmo14">mateimmo14</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/jptorrado">jptorrado</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/Timur124342">Timur124342</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/Samegentil">Samegentil</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/Evg501">Evg501</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/MantraChen">MantraChen</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/MinaOwO">MinaOwO</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/Mykyta-Medynskyi">Mykyta-Medynskyi</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/JoyJSTV">JoyJSTV</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/ttqdqqd">ttqdqqd</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/Not-Teaegg">Not-Teaegg</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/NotADeveloperAtAll">NotADeveloperAtAll</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/brz0x100">brz0x100</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/sendaoz">sendaoz</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/nikan48g">nikan48g</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/MO-233">MO-233</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/17695432859">17695432859</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/typechaos">typechaos</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/nekomario28">nekomario28</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/ceng10086">ceng10086</a></td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="forks" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Community</p>
+        <h2>Forks</h2>
+      </div>
+      <div class="metrics"><div class="metric"><span>Forks</span><strong>31</strong><small>current API listing</small></div><div class="metric"><span>Days with forks</span><strong>5</strong><small>event days</small></div></div>
+      <div class="content-grid">
+        <div class="bucket-tabs"><input type="radio" name="bt-forks" id="bt-forks-day" checked class="bucket-radio" /><input type="radio" name="bt-forks" id="bt-forks-week" class="bucket-radio" /><input type="radio" name="bt-forks" id="bt-forks-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-forks-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-forks-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-forks-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><div class="chart" role="img" aria-label="New forks per day">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">New forks per day</text>
+    <text x="14" y="16" class="label">new forks / day</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">5</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">10</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">15</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">20</text><rect x="64.0" y="154.6" width="145.2" height="23.4" fill="#fb7185" rx="2" ry="2"><title>New forks (2026-10-23): 3</title></rect><text x="136.6" y="208" text-anchor="middle" class="label">10-23</text><rect x="225.2" y="37.6" width="145.2" height="140.4" fill="#fb7185" rx="2" ry="2"><title>New forks (2026-10-24): 18</title></rect><text x="297.8" y="208" text-anchor="middle" class="label">10-24</text><rect x="386.4" y="139.0" width="145.2" height="39.0" fill="#fb7185" rx="2" ry="2"><title>New forks (2026-10-25): 5</title></rect><text x="459.0" y="208" text-anchor="middle" class="label">10-25</text><rect x="547.6" y="154.6" width="145.2" height="23.4" fill="#fb7185" rx="2" ry="2"><title>New forks (2026-10-26): 3</title></rect><text x="620.2" y="208" text-anchor="middle" class="label">10-26</text><rect x="708.8" y="162.4" width="145.2" height="15.6" fill="#fb7185" rx="2" ry="2"><title>New forks (2026-10-27): 2</title></rect><text x="781.4" y="208" text-anchor="middle" class="label">10-27</text>
+  </svg>
+  <div class="legend"><span><i style="background:#fb7185"></i>New forks</span></div>
+</div></div><div class="bucket-panel" data-bucket="week"><div class="chart" role="img" aria-label="New forks per week">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">New forks per week</text>
+    <text x="14" y="16" class="label">new forks / week</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">12</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">25</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">38</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">50</text><rect x="64.0" y="96.9" width="387.0" height="81.1" fill="#fb7185" rx="2" ry="2"><title>New forks (2026-W43): 26</title></rect><text x="257.5" y="208" text-anchor="middle" class="label">2026-W43</text><rect x="467.0" y="162.4" width="387.0" height="15.6" fill="#fb7185" rx="2" ry="2"><title>New forks (2026-W44): 5</title></rect><text x="660.5" y="208" text-anchor="middle" class="label">2026-W44</text>
+  </svg>
+  <div class="legend"><span><i style="background:#fb7185"></i>New forks</span></div>
+</div></div><div class="bucket-panel" data-bucket="month"><div class="chart" role="img" aria-label="New forks per month">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">New forks per month</text>
+    <text x="14" y="16" class="label">new forks / month</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">12</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">25</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">38</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">50</text><rect x="64.0" y="81.3" width="790.0" height="96.7" fill="#fb7185" rx="2" ry="2"><title>New forks (2026-10): 31</title></rect><text x="459.0" y="208" text-anchor="middle" class="label">2026-10</text>
+  </svg>
+  <div class="legend"><span><i style="background:#fb7185"></i>New forks</span></div>
+</div></div></div>
+        <div class="table-panel"><table><caption>Recent fork events</caption><thead><tr><th>Date</th><th>Item</th></tr></thead><tbody><tr><td>2026-10-27</td><td><a href="https://github.com/JimmyfaQwQ/rtx-remix-minecraft">JimmyfaQwQ/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-27</td><td><a href="https://github.com/mahiro76/rtx-remix-minecraft">mahiro76/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-26</td><td><a href="https://github.com/antoine33doucet/rtx-remix-minecraft">antoine33doucet/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-26</td><td><a href="https://github.com/AlphaAntivoid/rtx-remix-minecraft">AlphaAntivoid/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-26</td><td><a href="https://github.com/aCannedFish/rtx-remix-minecraft">aCannedFish/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-25</td><td><a href="https://github.com/wbreiler/ray-tracing-minecraft">wbreiler/ray-tracing-minecraft</a></td></tr><tr><td>2026-10-25</td><td><a href="https://github.com/SamitMohnot/rtx-remix-minecraft">SamitMohnot/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-25</td><td><a href="https://github.com/TopMaksi07/rtx-remix-minecraft">TopMaksi07/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-25</td><td><a href="https://github.com/BrutalCatW/rtx-remix-minecraft">BrutalCatW/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-25</td><td><a href="https://github.com/5weetdev/rtx-remix-minecraft">5weetdev/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/yeezybeezydeezy/rtx-remix-minecraft">yeezybeezydeezy/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/quartz1216/rtx-remix-minecraft-radeon">quartz1216/rtx-remix-minecraft-radeon</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/Mango67sigma/rtx-remix-minecraft-26.3">Mango67sigma/rtx-remix-minecraft-26.3</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/Mailootje/rtx-remix-minecraft">Mailootje/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/hsiang-chin/rtx-remix-minecraft-26.3">hsiang-chin/rtx-remix-minecraft-26.3</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/xiaozhu52055/rtx-remix-minecraft_cn">xiaozhu52055/rtx-remix-minecraft_cn</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/Vozarius/rtx-remix-minecraft">Vozarius/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/AugustAmelia/rtx-remix-minecraft">AugustAmelia/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/Minealex2001/rtx-remix-minecraft">Minealex2001/rtx-remix-minecraft</a></td></tr><tr><td>2026-10-24</td><td><a href="https://github.com/xkeyC/rtx-remix-minecraft">xkeyC/rtx-remix-minecraft</a></td></tr></tbody></table></div>
+      </div>
+    </section>
+    <section id="repository-counters" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Health</p>
+        <h2>Repository counters</h2>
+        <p class="note">Cumulative GitHub counters sampled on each run. Monthly values are observed deltas between snapshots.</p>
+      </div>
+      <div class="metrics"><div class="metric"><span>Stargazers</span><strong>528</strong><small>latest snapshot</small></div><div class="metric"><span>Forks</span><strong>31</strong><small>latest snapshot</small></div><div class="metric"><span>Subscribers</span><strong>5</strong><small>latest snapshot</small></div><div class="metric"><span>Open issues</span><strong>43</strong><small>latest snapshot</small></div></div>
+      <div class="content-grid">
+        <div class="bucket-tabs"><input type="radio" name="bt-repository-counters-deltas" id="bt-repository-counters-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-repository-counters-deltas" id="bt-repository-counters-deltas-week" class="bucket-radio" /><input type="radio" name="bt-repository-counters-deltas" id="bt-repository-counters-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-repository-counters-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-repository-counters-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-repository-counters-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><p class="note">No data available for repository counter changes per day.</p></div><div class="bucket-panel" data-bucket="week"><p class="note">No data available for repository counter changes per week.</p></div><div class="bucket-panel" data-bucket="month"><p class="note">No data available for repository counter changes per month.</p></div></div>
+        <div class="table-panel"><p class="note">No monthly observed repository counter changes yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+      </div>
+    </section>
+    <section id="releases" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Delivery</p>
+        <h2>Release asset downloads</h2>
+        <p class="note">GitHub exposes download counts for uploaded release assets. Generated source ZIP and TAR archives do not expose download counters. Each asset is also grouped into a release (collection by tag) and an asset family (collection by canonical name).</p>
+      </div>
+      <div class="metrics"><div class="metric"><span>Tracked assets</span><strong>1</strong><small>uploaded assets</small></div><div class="metric"><span>Releases</span><strong>1</strong><small>tags with assets</small></div><div class="metric"><span>Asset families</span><strong>1</strong><small>canonical names</small></div><div class="metric"><span>Total downloads</span><strong>17,764</strong><small>latest cumulative count</small></div><div class="metric"><span>Today</span><strong>0</strong><small>latest day-over-day delta</small></div><div class="metric"><span>This week</span><strong>0</strong><small>delta across all assets</small></div><div class="metric"><span>This month</span><strong>0</strong><small>delta across all assets</small></div></div>
+      <div class="bucket-tabs"><input type="radio" name="bt-release-total-deltas" id="bt-release-total-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-release-total-deltas" id="bt-release-total-deltas-week" class="bucket-radio" /><input type="radio" name="bt-release-total-deltas" id="bt-release-total-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-release-total-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-release-total-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-release-total-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><div class="chart" role="img" aria-label="Downloads per day (delta between snapshots)">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">Downloads per day (delta between snapshots)</text>
+    <text x="14" y="16" class="label">downloads / day</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">0.2</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">0.5</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">0.8</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">1</text><text x="459.0" y="208" text-anchor="middle" class="label">10-27</text>
+  </svg>
+  <div class="legend"><span><i style="background:#81e2b2"></i>Downloads added</span></div>
+</div></div><div class="bucket-panel" data-bucket="week"><div class="chart" role="img" aria-label="Downloads per week (delta between snapshots)">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">Downloads per week (delta between snapshots)</text>
+    <text x="14" y="16" class="label">downloads / week</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">0.2</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">0.5</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">0.8</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">1</text><text x="459.0" y="208" text-anchor="middle" class="label">2026-W44</text>
+  </svg>
+  <div class="legend"><span><i style="background:#81e2b2"></i>Downloads added</span></div>
+</div></div><div class="bucket-panel" data-bucket="month"><div class="chart" role="img" aria-label="Downloads per month (delta between snapshots)">
+  <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <text x="459.0" y="13" text-anchor="middle" class="chart-title">Downloads per month (delta between snapshots)</text>
+    <text x="14" y="16" class="label">downloads / month</text>
+    <line x1="56" y1="22" x2="56" y2="178" class="axis" /><line x1="56" y1="178" x2="862" y2="178" class="axis" /><line x1="56" y1="139.0" x2="862" y2="139.0" class="grid" /><text x="48" y="143.0" text-anchor="end" class="label">0.2</text><line x1="56" y1="100.0" x2="862" y2="100.0" class="grid" /><text x="48" y="104.0" text-anchor="end" class="label">0.5</text><line x1="56" y1="61.0" x2="862" y2="61.0" class="grid" /><text x="48" y="65.0" text-anchor="end" class="label">0.8</text><line x1="56" y1="22.0" x2="862" y2="22.0" class="grid" /><text x="48" y="26.0" text-anchor="end" class="label">1</text><text x="459.0" y="208" text-anchor="middle" class="label">2026-10</text>
+  </svg>
+  <div class="legend"><span><i style="background:#81e2b2"></i>Downloads added</span></div>
+</div></div></div>
+      <div class="content-grid">
+        <div class="chart" role="img" aria-label="Tracked release asset downloads over time (cumulative)">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Tracked release asset downloads over time (cumulative)</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">5,000</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">10,000</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">15,000</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">20,000</text><text x="456.0" y="248" text-anchor="middle" class="label">10-27</text>
+    <circle cx="456.0" cy="40.4" r="4" fill="#7db7ff"><title>Cumulative — 10-27: 17,764</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>Cumulative</span></div>
+</div>
+        <div class="table-panel"><p class="note">No monthly observed release asset downloads yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+      </div>
+      <div class="release-subsections">
+        <div class="release-subsection" id="releases-by-asset">
+          <h3>By individual asset</h3>
+          <p class="note">Top 1 of 1 tracked assets, ranked by total downloads. The chart on the left shows download deltas between snapshots (use the granularity toggle to switch between daily, weekly and monthly buckets); the bars on the right rank assets by their lifetime total.</p>
+          <div class="content-grid">
+            <div class="bucket-tabs"><input type="radio" name="bt-releases-by-asset-deltas" id="bt-releases-by-asset-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-releases-by-asset-deltas" id="bt-releases-by-asset-deltas-week" class="bucket-radio" /><input type="radio" name="bt-releases-by-asset-deltas" id="bt-releases-by-asset-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-releases-by-asset-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-releases-by-asset-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-releases-by-asset-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><p class="note">No data available for top assets daily downloads (delta).</p></div><div class="bucket-panel" data-bucket="week"><p class="note">No data available for top assets weekly downloads (delta).</p></div><div class="bucket-panel" data-bucket="month"><p class="note">No data available for top assets monthly downloads (delta).</p></div></div>
+            <div class="hbar-chart" role="img" aria-label="Top assets by downloads"><p class="chart-title">Top assets by downloads</p><div class="hbar-row"><span class="hbar-label"><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/releases/download/v0.1.0/rtx-remix-renderer-0.1.0-202610230634-170197a.zip">v0.1.0 / rtx-remix-renderer-0.1.0-202610230634-170197a.zip</a></span><span class="hbar-track" aria-hidden="true"><span class="hbar-fill" style="width:100.0%; background:#7db7ff"></span></span><span class="hbar-value">17,764</span><span class="hbar-secondary" title="Share of total">100.0%</span></div></div>
+          </div>
+          <div class="table-panel wide-table"><table><caption>Top assets</caption><thead><tr><th>Release</th><th>Asset</th><th>Family</th><th class="num">Downloads</th><th class="num">Size</th><th>Share</th></tr></thead><tbody><tr><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/releases/tag/v0.1.0">v0.1.0</a></td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/releases/download/v0.1.0/rtx-remix-renderer-0.1.0-202610230634-170197a.zip">rtx-remix-renderer-0.1.0-202610230634-170197a.zip</a></td><td>rtx-remix-renderer-170197a.zip</td><td class="num">17,764</td><td class="num">983.3 MB</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr></tbody></table></div>
+        </div>
+        <div class="release-subsection" id="releases-by-release">
+          <h3>By release (collection of assets per tag)</h3>
+          <p class="note">1 release tag(s) carry uploaded assets. Cumulative downloads roll up every asset attached to a tag. The bar chart shows download deltas per tag at the selected granularity.</p>
+          <div class="content-grid">
+            <div class="bucket-tabs"><input type="radio" name="bt-releases-by-release-deltas" id="bt-releases-by-release-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-releases-by-release-deltas" id="bt-releases-by-release-deltas-week" class="bucket-radio" /><input type="radio" name="bt-releases-by-release-deltas" id="bt-releases-by-release-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-releases-by-release-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-releases-by-release-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-releases-by-release-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><p class="note">No data available for top releases daily downloads (delta).</p></div><div class="bucket-panel" data-bucket="week"><p class="note">No data available for top releases weekly downloads (delta).</p></div><div class="bucket-panel" data-bucket="month"><p class="note">No data available for top releases monthly downloads (delta).</p></div></div>
+            <div class="hbar-chart" role="img" aria-label="Top releases by downloads"><p class="chart-title">Top releases by downloads</p><div class="hbar-row"><span class="hbar-label"><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/releases/tag/v0.1.0">RTX Remix for Minecraft 0.1.0</a></span><span class="hbar-track" aria-hidden="true"><span class="hbar-fill" style="width:100.0%; background:#81e2b2"></span></span><span class="hbar-value">17,764</span><span class="hbar-secondary" title="Share of total">100.0%</span></div></div>
+          </div>
+          <div class="table-panel wide-table"><table><caption>Releases ranked by total downloads</caption><thead><tr><th>Release</th><th>Published</th><th class="num">Assets</th><th class="num">Downloads</th><th class="num">Share</th><th>Distribution</th></tr></thead><tbody><tr><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/releases/tag/v0.1.0">RTX Remix for Minecraft 0.1.0</a></td><td>2026-10-23</td><td class="num">1</td><td class="num">17,764</td><td class="num">100.0%</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr></tbody></table></div>
+          <div class="table-panel wide-table"><p class="note">No monthly observed downloads by release yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+        </div>
+        <div class="release-subsection" id="releases-by-family">
+          <h3>By asset family (collection of versions per canonical name)</h3>
+          <p class="note">Family keys are derived by stripping version segments from each asset name. They group the same artifact across releases, e.g. <code>remix-1.4.2-release.zip</code> &rarr; <code>remix-release.zip</code>. The bar chart shows download deltas summed across every version that belongs to each family, at the selected granularity.</p>
+          <div class="content-grid">
+            <div class="bucket-tabs"><input type="radio" name="bt-releases-by-family-deltas" id="bt-releases-by-family-deltas-day" checked class="bucket-radio" /><input type="radio" name="bt-releases-by-family-deltas" id="bt-releases-by-family-deltas-week" class="bucket-radio" /><input type="radio" name="bt-releases-by-family-deltas" id="bt-releases-by-family-deltas-month" class="bucket-radio" /><div class="bucket-tab-strip" role="tablist"><label for="bt-releases-by-family-deltas-day" data-bucket="day" class="bucket-tab-label">Daily</label><label for="bt-releases-by-family-deltas-week" data-bucket="week" class="bucket-tab-label">Weekly</label><label for="bt-releases-by-family-deltas-month" data-bucket="month" class="bucket-tab-label">Monthly</label></div><div class="bucket-panel" data-bucket="day"><p class="note">No data available for asset families daily downloads (delta).</p></div><div class="bucket-panel" data-bucket="week"><p class="note">No data available for asset families weekly downloads (delta).</p></div><div class="bucket-panel" data-bucket="month"><p class="note">No data available for asset families monthly downloads (delta).</p></div></div>
+            <div class="hbar-chart" role="img" aria-label="Top asset families by downloads"><p class="chart-title">Top asset families by downloads</p><div class="hbar-row"><span class="hbar-label">rtx-remix-renderer-170197a.zip</span><span class="hbar-track" aria-hidden="true"><span class="hbar-fill" style="width:100.0%; background:#f4c76d"></span></span><span class="hbar-value">17,764</span><span class="hbar-secondary" title="Share of total">100.0%</span></div></div>
+          </div>
+          <div class="table-panel wide-table"><table><caption>Asset families ranked by total downloads</caption><thead><tr><th>Family</th><th class="num">Assets</th><th class="num">Releases</th><th class="num">Downloads</th><th class="num">Share</th><th>Distribution</th></tr></thead><tbody><tr><td>rtx-remix-renderer-170197a.zip</td><td class="num">1</td><td class="num">1</td><td class="num">17,764</td><td class="num">100.0%</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr></tbody></table></div>
+          <div class="table-panel wide-table"><p class="note">No monthly observed downloads by asset family yet. At least two snapshots are needed for a non-zero observed delta.</p></div>
+        </div>
+      </div>
+    </section>
+    <section id="popular" class="report-section">
+      <div class="section-heading">
+        <p class="eyebrow">Acquisition</p>
+        <h2>Top referrers and paths</h2>
+        <p class="note">GitHub reports referrers and paths as rolling 14-day windows. These snapshots are sampled window values, not additive totals.</p>
+      </div>
+      <div class="split">
+        <div class="table-panel">
+          <h3>Top referrers</h3>
+          <table><thead><tr><th class="num">Rank</th><th>Name</th><th class="num">Uniques</th><th class="num">Count</th><th>Share</th></tr></thead><tbody><tr><td class="num">1</td><td>Google</td><td class="num">2,278</td><td class="num">3,515</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr><tr><td class="num">2</td><td>t.co</td><td class="num">2,377</td><td class="num">2,963</td><td class="bar-cell"><span class="bar" style="width:84.3%"></span></td></tr><tr><td class="num">3</td><td>github.com</td><td class="num">567</td><td class="num">816</td><td class="bar-cell"><span class="bar" style="width:23.2%"></span></td></tr><tr><td class="num">4</td><td>Bing</td><td class="num">368</td><td class="num">481</td><td class="bar-cell"><span class="bar" style="width:13.7%"></span></td></tr><tr><td class="num">5</td><td>search.brave.com</td><td class="num">149</td><td class="num">261</td><td class="bar-cell"><span class="bar" style="width:7.4%"></span></td></tr><tr><td class="num">6</td><td>playground.ru</td><td class="num">180</td><td class="num">235</td><td class="bar-cell"><span class="bar" style="width:6.7%"></span></td></tr><tr><td class="num">7</td><td>reddit.com</td><td class="num">164</td><td class="num">214</td><td class="bar-cell"><span class="bar" style="width:6.1%"></span></td></tr><tr><td class="num">8</td><td>youtube.com</td><td class="num">152</td><td class="num">207</td><td class="bar-cell"><span class="bar" style="width:5.9%"></span></td></tr><tr><td class="num">9</td><td>yandex.ru</td><td class="num">146</td><td class="num">190</td><td class="bar-cell"><span class="bar" style="width:5.4%"></span></td></tr><tr><td class="num">10</td><td>curseforge.com</td><td class="num">127</td><td class="num">163</td><td class="bar-cell"><span class="bar" style="width:4.6%"></span></td></tr></tbody></table>
+        </div>
+        <div class="table-panel">
+          <h3>Top paths</h3>
+          <table><thead><tr><th class="num">Rank</th><th>Name</th><th class="num">Uniques</th><th class="num">Count</th><th>Share</th></tr></thead><tbody><tr><td class="num">1</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft">/NVIDIAGameWorks/rtx-remix-minecraft</a></td><td class="num">9,089</td><td class="num">14,355</td><td class="bar-cell"><span class="bar" style="width:100.0%"></span></td></tr><tr><td class="num">2</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/releases/tag/v0.1.0">/NVIDIAGameWorks/rtx-remix-minecraft/releases/tag/v0.1.0</a></td><td class="num">5,620</td><td class="num">8,071</td><td class="bar-cell"><span class="bar" style="width:56.2%"></span></td></tr><tr><td class="num">3</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/releases">/NVIDIAGameWorks/rtx-remix-minecraft/releases</a></td><td class="num">4,835</td><td class="num">6,343</td><td class="bar-cell"><span class="bar" style="width:44.2%"></span></td></tr><tr><td class="num">4</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/blob/main/docs/PLAYING.md">/NVIDIAGameWorks/rtx-remix-minecraft/blob/main/docs/PLAYING.md</a></td><td class="num">1,326</td><td class="num">1,845</td><td class="bar-cell"><span class="bar" style="width:12.9%"></span></td></tr><tr><td class="num">5</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/issues">/NVIDIAGameWorks/rtx-remix-minecraft/issues</a></td><td class="num">763</td><td class="num">1,469</td><td class="bar-cell"><span class="bar" style="width:10.2%"></span></td></tr><tr><td class="num">6</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/blob/main/packaging/INSTALL.md">/NVIDIAGameWorks/rtx-remix-minecraft/blob/main/packaging/INSTALL.md</a></td><td class="num">770</td><td class="num">1,006</td><td class="bar-cell"><span class="bar" style="width:7.0%"></span></td></tr><tr><td class="num">7</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/tree/main">/NVIDIAGameWorks/rtx-remix-minecraft/tree/main</a></td><td class="num">356</td><td class="num">521</td><td class="bar-cell"><span class="bar" style="width:3.6%"></span></td></tr><tr><td class="num">8</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/blob/main/docs/RESOURCE_PACKS.md">/NVIDIAGameWorks/rtx-remix-minecraft/blob/main/docs/RESOURCE_PACKS.md</a></td><td class="num">286</td><td class="num">441</td><td class="bar-cell"><span class="bar" style="width:3.1%"></span></td></tr><tr><td class="num">9</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/pulls">/NVIDIAGameWorks/rtx-remix-minecraft/pulls</a></td><td class="num">174</td><td class="num">273</td><td class="bar-cell"><span class="bar" style="width:1.9%"></span></td></tr><tr><td class="num">10</td><td><a href="https://github.com/NVIDIAGameWorks/rtx-remix-minecraft/issues/28">/NVIDIAGameWorks/rtx-remix-minecraft/issues/28</a></td><td class="num">124</td><td class="num">262</td><td class="bar-cell"><span class="bar" style="width:1.8%"></span></td></tr></tbody></table>
+        </div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart" role="img" aria-label="Top referrers: rolling 14-day unique visitors">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Top referrers: rolling 14-day unique visitors</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">50</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">100</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">150</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">200</text><text x="456.0" y="248" text-anchor="middle" class="label">10-27</text>
+    <circle cx="456.0" cy="48.2" r="4" fill="#7db7ff"><title>t.co — 10-27: 170</title></circle><circle cx="456.0" cy="55.3" r="4" fill="#81e2b2"><title>Google — 10-27: 163</title></circle><circle cx="456.0" cy="177.5" r="4" fill="#b69cff"><title>github.com — 10-27: 40</title></circle><circle cx="456.0" cy="191.7" r="4" fill="#f4c76d"><title>Bing — 10-27: 26</title></circle><circle cx="456.0" cy="205.1" r="4" fill="#67e8f9"><title>playground.ru — 10-27: 13</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>t.co</span><span><i style="background:#81e2b2"></i>Google</span><span><i style="background:#b69cff"></i>github.com</span><span><i style="background:#f4c76d"></i>Bing</span><span><i style="background:#67e8f9"></i>playground.ru</span></div>
+</div>
+        <div class="chart" role="img" aria-label="Top paths: rolling 14-day unique visitors">
+  <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .axis { stroke: var(--chart-axis, #52685d); stroke-width: 1; }
+      .grid { stroke: var(--chart-grid, #22342d); stroke-width: 1; }
+      .label { fill: var(--chart-label, #a5b6ae); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .chart-title { fill: #d9e8e0; font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .point { stroke: #0b1612; stroke-width: 1; }
+    </style>
+    <text x="456.0" y="13" text-anchor="middle" class="chart-title">Top paths: rolling 14-day unique visitors</text>
+    <line x1="56" y1="18" x2="56" y2="218" class="axis" /><line x1="56" y1="218" x2="856" y2="218" class="axis" /><line x1="56" y1="168.0" x2="856" y2="168.0" class="grid" /><text x="48" y="172.0" text-anchor="end" class="label">250</text><line x1="56" y1="118.0" x2="856" y2="118.0" class="grid" /><text x="48" y="122.0" text-anchor="end" class="label">500</text><line x1="56" y1="68.0" x2="856" y2="68.0" class="grid" /><text x="48" y="72.0" text-anchor="end" class="label">750</text><line x1="56" y1="18.0" x2="856" y2="18.0" class="grid" /><text x="48" y="22.0" text-anchor="end" class="label">1,000</text><text x="456.0" y="248" text-anchor="middle" class="label">10-27</text>
+    <circle cx="456.0" cy="88.2" r="4" fill="#7db7ff"><title>/NVIDIAGameWorks/rtx-remix-minecraft — 10-27: 649</title></circle><circle cx="456.0" cy="137.7" r="4" fill="#81e2b2"><title>/NVIDIAGameWorks/rt.../releases/tag/v0.1.0 — 10-27: 401</title></circle><circle cx="456.0" cy="148.9" r="4" fill="#b69cff"><title>/NVIDIAGameWorks/rt...x-minecraft/releases — 10-27: 345</title></circle><circle cx="456.0" cy="199.1" r="4" fill="#f4c76d"><title>/NVIDIAGameWorks/rt...main/docs/PLAYING.md — 10-27: 95</title></circle><circle cx="456.0" cy="207.0" r="4" fill="#67e8f9"><title>/NVIDIAGameWorks/rt...packaging/INSTALL.md — 10-27: 55</title></circle>
+  </svg>
+  <div class="legend"><span><i style="background:#7db7ff"></i>/NVIDIAGameWorks/rtx-remix-minecraft</span><span><i style="background:#81e2b2"></i>/NVIDIAGameWorks/rt.../releases/tag/v0.1.0</span><span><i style="background:#b69cff"></i>/NVIDIAGameWorks/rt...x-minecraft/releases</span><span><i style="background:#f4c76d"></i>/NVIDIAGameWorks/rt...main/docs/PLAYING.md</span><span><i style="background:#67e8f9"></i>/NVIDIAGameWorks/rt...packaging/INSTALL.md</span></div>
+</div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    Generated by github-stats-action-nv.
+  </footer>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "aggregate_counts": {
+    "forks": 31,
+    "open_issues": 43,
+    "stargazers": 528,
+    "subscribers": 5,
+    "watchers": 528
+  },
+  "days": {
+    "clones": 14,
+    "views": 14
+  },
+  "generated_at": "2026-10-27T19:35:43Z",
+  "monthly_release_asset_downloads": 0,
+  "report_path": "NVIDIAGameWorks/rtx-remix-minecraft/latest-report/report.html",
+  "report_url": "",
+  "repository": "NVIDIAGameWorks/rtx-remix-minecraft",
+  "snapshot_count": 1,
+  "totals": {
+    "clones": 806,
+    "forks": 31,
+    "release_asset_downloads": 17764,
+    "release_assets": 1,
+    "stargazers": 528,
+    "unique_cloners": 439,
+    "unique_visitors": 15154,
+    "views": 39665
+  }
+}
