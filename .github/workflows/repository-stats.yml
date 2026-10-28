@@ -30,7 +30,7 @@ jobs:
             repository: NVIDIAGameWorks/rtx-remix-minecraft
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_STATS_WRITE_TOKEN }}
