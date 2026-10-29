@@ -2,28 +2,28 @@
   "aggregate_counts": {
     "forks": 99,
     "open_issues": 298,
-    "stargazers": 1708,
+    "stargazers": 1711,
     "subscribers": 49,
-    "watchers": 1708
+    "watchers": 1711
   },
   "days": {
-    "clones": 197,
-    "views": 197
+    "clones": 198,
+    "views": 198
   },
-  "generated_at": "2026-10-28T09:39:47Z",
-  "monthly_release_asset_downloads": 6629,
+  "generated_at": "2026-10-29T03:24:51Z",
+  "monthly_release_asset_downloads": 6989,
   "report_path": "NVIDIAGameWorks/rtx-remix/latest-report/report.html",
   "report_url": "",
   "repository": "NVIDIAGameWorks/rtx-remix",
-  "snapshot_count": 192,
+  "snapshot_count": 193,
   "totals": {
-    "clones": 1841,
+    "clones": 1863,
     "forks": 100,
-    "release_asset_downloads": 160634,
+    "release_asset_downloads": 160994,
     "release_assets": 285,
-    "stargazers": 1708,
-    "unique_cloners": 1368,
-    "unique_visitors": 36345,
-    "views": 67364
+    "stargazers": 1711,
+    "unique_cloners": 1388,
+    "unique_visitors": 36872,
+    "views": 68452
   }
 }
